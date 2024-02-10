@@ -4,7 +4,6 @@ import { Modal } from 'bootstrap';
 
 window.addEventListener('DOMContentLoaded', function () {
     const twoFactorAuthModal = new Modal(document.getElementById('twoFactorAuthModal'))
-
     document.querySelector('.log-in-btn').addEventListener('click', function (event) {
         const form     = this.closest('form')
         const formData = new FormData(form);

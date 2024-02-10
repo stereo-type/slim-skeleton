@@ -59,12 +59,23 @@ use Twig\Extra\Intl\IntlExtension;
 
 use function DI\create;
 
+/**Если есть в проекте конфиг подгружаем его иначе берем из ядра*/
+$config_file = file_exists(CONFIG_PATH.'/config.php')
+    ? CONFIG_PATH.'/config.php' : CORE_CONFIG_PATH.'/core_config.php';
+
+$route_file = file_exists(CONFIG_PATH.'/routes/web.php')
+    ? CONFIG_PATH.'/routes/web.php' : CORE_CONFIG_PATH.'/routes/web.php';
+
+$middleware_file = file_exists(CONFIG_PATH.'/middleware.php')
+    ? CONFIG_PATH.'/middleware.php' : CORE_CONFIG_PATH.'/middleware.php';
+
+
 return [
     App::class                              =>
-        static function (ContainerInterface $container) {
+        static function (ContainerInterface $container) use ($middleware_file, $route_file) {
             AppFactory::setContainer($container);
-            $addMiddlewares = require CONFIG_PATH.'/middleware.php';
-            $router = require CONFIG_PATH.'/routes/web.php';
+            $addMiddlewares = require $middleware_file;
+            $router = require $route_file;
             $app = AppFactory::create();
             $app->getRouteCollector()->setDefaultInvocationStrategy(
                 new RouteEntityBindingStrategy(
@@ -76,7 +87,7 @@ return [
             $addMiddlewares($app);
             return $app;
         },
-    Config::class                           => create(Config::class)->constructor(require CONFIG_PATH.'/config.php'),
+    Config::class                           => create(Config::class)->constructor(require $config_file),
     EntityManagerInterface::class           =>
         static function (Config $config) {
             $ormConfig = ORMSetup::createAttributeMetadataConfiguration(
@@ -105,7 +116,11 @@ return [
         },
     Twig::class                             =>
         static function (Config $config, ContainerInterface $container) {
-            $twig = Twig::create(VIEW_PATH, [
+
+            $twig = Twig::create([
+                CORE_VIEW_PATH,
+                VIEW_PATH
+            ], [
                 'cache'       => STORAGE_PATH.'/cache/templates',
                 'auto_reload' => AppEnvironment::isDevelopment($config->get('app_environment')),
             ]);

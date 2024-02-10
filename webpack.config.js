@@ -1,4 +1,6 @@
 const Encore = require("@symfony/webpack-encore")
+const fs = require('fs');
+const path = require('path');
 
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
 // It's useful when you use tools that rely on webpack.config.js file.
@@ -6,6 +8,27 @@ if (! Encore.isRuntimeEnvironmentConfigured()) {
     Encore.configureRuntimeEnvironment(process.env.NODE_ENV || "dev")
 }
 
+const coreResourcesPath = path.join(__dirname, 'app', 'Core', 'assets', 'js');
+const projectResourcesPath = path.join(__dirname, 'resources', 'js');
+
+// Функция для добавления файлов в сборку
+const addCoreFilesToBuild = (directoryPath) => {
+    fs.readdirSync(directoryPath).forEach(file => {
+        const filePath = path.join(directoryPath, file);
+        if (fs.statSync(filePath).isFile() && file.endsWith('.js')) {
+            // Добавляем только файлы JavaScript в качестве точек входа
+            const entryName = path.basename(file, '.js'); // Имя файла без расширения
+            Encore.addEntry(entryName, filePath);
+        } else if (fs.statSync(filePath).isDirectory()) {
+            // Если это директория, рекурсивно добавляем ее содержимое
+            addCoreFilesToBuild(filePath);
+        }
+    });
+};
+
+// Добавляем файлы из app/Core/resources в сборку
+addCoreFilesToBuild(coreResourcesPath);
+addCoreFilesToBuild(projectResourcesPath);
 Encore
     // directory where compiled assets will be stored
     .setOutputPath("public/build/")
@@ -19,11 +42,7 @@ Encore
      * Each entry will result in one JavaScript file (e.g. app.js)
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
-    .addEntry("app", "./resources/js/app.js")
-    .addEntry("auth", "./resources/js/auth.js")
-    .addEntry("verify", "./resources/js/verify.js")
-    .addEntry("profile", "./resources/js/profile.js")
-    .addEntry("forgot_password", "./resources/js/forgot_password.js")
+    /**Включен auto-wiring,см addCoreFilesToBuild*/
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
@@ -57,7 +76,7 @@ Encore
     })
 
     .copyFiles({
-        from: "./resources/images",
+        from: "./app/Core/assets/images",
         to: "images/[path][name].[hash:8].[ext]",
         pattern: /\.(png|jpg|jpeg|gif)$/
     })
