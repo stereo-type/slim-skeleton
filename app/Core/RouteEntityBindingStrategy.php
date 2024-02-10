@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Core;
 
@@ -28,17 +28,17 @@ class RouteEntityBindingStrategy implements InvocationStrategyInterface
         array $routeArguments
     ): ResponseInterface {
         $callableReflection = $this->createReflectionForCallable($callable);
-        $resolvedArguments  = [];
+        $resolvedArguments = [];
 
         foreach ($callableReflection->getParameters() as $parameter) {
             $type = $parameter->getType();
 
-            if (! $type) {
+            if (!$type) {
                 continue;
             }
 
             $paramName = $parameter->getName();
-            $typeName  = $type->getName();
+            $typeName = $type->getName();
 
             if ($type->isBuiltin()) {
                 if ($typeName === 'array' && $paramName === 'args') {
@@ -52,15 +52,15 @@ class RouteEntityBindingStrategy implements InvocationStrategyInterface
                 } else {
                     $entityId = $routeArguments[$paramName] ?? null;
 
-                    if (! $entityId || $parameter->allowsNull()) {
+                    if (!$entityId || $parameter->allowsNull()) {
                         throw new \InvalidArgumentException(
-                            'Unable to resolve argument "' . $paramName . '" in the callable'
+                            'Unable to resolve argument "'.$paramName.'" in the callable'
                         );
                     }
 
                     $entity = $this->entityManagerService->find($typeName, $entityId);
 
-                    if (! $entity) {
+                    if (!$entity) {
                         return $this->responseFactory->createResponse(404, 'Resource Not Found');
                     }
 

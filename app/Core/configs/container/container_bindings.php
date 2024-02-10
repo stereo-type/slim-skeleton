@@ -63,9 +63,11 @@ use function DI\create;
 $config_file = file_exists(CONFIG_PATH.'/config.php')
     ? CONFIG_PATH.'/config.php' : CORE_CONFIG_PATH.'/core_config.php';
 
-$route_file = file_exists(CONFIG_PATH.'/routes/web.php')
-    ? CONFIG_PATH.'/routes/web.php' : CORE_CONFIG_PATH.'/routes/web.php';
+/**Если есть в проекте маршруты подгружаем их иначе берем из ядра*/
+$route_file = file_exists(CONFIG_PATH.'/routes/routes.php')
+    ? CONFIG_PATH.'/routes/routes.php' : CORE_CONFIG_PATH.'/routes.php';
 
+/**Если есть в проекте middleware подгружаем его иначе берем из ядра*/
 $middleware_file = file_exists(CONFIG_PATH.'/middleware.php')
     ? CONFIG_PATH.'/middleware.php' : CORE_CONFIG_PATH.'/middleware.php';
 
