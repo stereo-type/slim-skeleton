@@ -8,11 +8,21 @@
 declare(strict_types=1);
 
 return [
-    'email'                     => 'Email',
-    'password'                  => 'Password',
-    'login'                     => 'Login',
-    'log_in'                    => 'Log In',
-    'sign_up'                   => 'Sign Up',
-    'login:forgot_pass'         => 'Forgot password?',
-    'login:do_you_have_account' => "Don't have an account?",
+    'name'     => 'Name',
+    'email'    => 'Email',
+    'password' => 'Password',
+    'login'    => 'Login',
+    'log_in'   => 'Log In',
+    'sign_in'  => 'Sign In',
+    'sign_up'  => 'Sign Up',
+    'register' => 'Register',
+    'continue' => 'Continue',
+
+    'login:forgot_pass'             => 'Forgot password?',
+    'login:do_you_have_account'     => "Don't have an account?",
+    'registration:confirm_password' => "Confirm Password",
+    'registration:already_have'     => "Have an account?",
+    'forgot_pass:forgot_password'   => "Forgot Password",
+    'forgot_pass:enter_email'       => "Enter your email address",
+    'forgot_pass:back_to'           => "Back to",
 ];

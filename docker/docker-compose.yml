@@ -38,19 +38,19 @@ services:
       MYSQL_ROOT_PASSWORD: '${DB_PASS}'
     ports:
       - "3306:3306"
-#  mailhog:
-#    container_name: slim-skeleton-mailhog
-#    image: mailhog/mailhog
-#    restart: always
-#    logging:
-#      driver: "none"
-#    ports:
-#      - "8025:8025"
-#      - "1025:1025"
-#  redis:
-#    image: redis:latest
-#    container_name: expennies-redis
-#    restart: always
-#    ports:
-#      - "6379:6379"
-#    command: redis-server --requirepass mypassword
+  mailhog:
+    container_name: "${APP_NAME}-mailhog"
+    image: mailhog/mailhog
+    restart: always
+    logging:
+      driver: "none"
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+  redis:
+    image: redis:latest
+    container_name: "${APP_NAME}-redis"
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASS}

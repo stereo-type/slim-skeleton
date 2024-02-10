@@ -8,11 +8,21 @@
 declare(strict_types=1);
 
 return [
-    'email'                     => 'Почта',
-    'password'                  => 'Пароль',
-    'login'                     => 'Вход',
-    'log_in'                    => 'Войти',
-    'sign_up'                   => 'Регистрация',
-    'login:forgot_pass'         => 'Забыли пароль?',
-    'login:do_you_have_account' => "У Вас уже есть аккаунт?",
+    'name'     => 'Имя',
+    'email'    => 'Почта',
+    'password' => 'Пароль',
+    'login'    => 'Вход',
+    'log_in'   => 'Войти',
+    'sign_in'  => 'Войти',
+    'sign_up'  => 'Регистрация',
+    'register' => 'Зарегистрироваться',
+    'continue' => 'Продолжить',
+
+    'login:forgot_pass'             => 'Забыли пароль?',
+    'login:do_you_have_account'     => "У вас есть аккаунт?",
+    'registration:confirm_password' => 'Подтвердить пароль',
+    'registration:already_have'     => 'Уже есть аккаунт?',
+    'forgot_pass:forgot_password'   => "Забыли пароль",
+    'forgot_pass:enter_email'       => "Введите свой почтовый адрес",
+    'forgot_pass:back_to'           => "Вернуться к",
 ];

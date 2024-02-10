@@ -51,14 +51,6 @@ return [
     ],
     'storage'               => [
         'driver' => ($_ENV['STORAGE_DRIVER'] ?? '') === 's3' ? StorageDriver::Remote_DO : StorageDriver::Local,
-        's3'     => [
-            'key'      => $_ENV['S3_KEY'],
-            'secret'   => $_ENV['S3_SECRET'],
-            'region'   => $_ENV['S3_REGION'],
-            'version'  => $_ENV['S3_VERSION'],
-            'endpoint' => $_ENV['S3_ENDPOINT'],
-            'bucket'   => $_ENV['S3_BUCKET'],
-        ],
     ],
     'mailer'                => [
         'driver' => $_ENV['MAILER_DRIVER'] ?? 'log',

@@ -22,7 +22,7 @@
                                         <input type="text" name="name" required
                                                value="{{ old.name }}"
                                                class="form-control form-control-lg {{ errors.name ? 'is-invalid' : '' }}"
-                                               placeholder="Name" />
+                                               placeholder=" {{ translate('name') }}" />
                                         <div class="invalid-feedback">
                                             {{ errors.name | first }}
                                         </div>
@@ -31,7 +31,7 @@
                                         <input type="email" name="email" required
                                                value="{{ old.email }}"
                                                class="form-control form-control-lg {{ errors.email ? 'is-invalid' : '' }}"
-                                               placeholder="Email" />
+                                               placeholder="{{ translate('email') }}" />
                                         <div class="invalid-feedback">
                                             {{ errors.email | first }}
                                         </div>
@@ -39,7 +39,7 @@
                                     <div class="form-outline form-white mb-4">
                                         <input type="password" name="password" required
                                                class="form-control form-control-lg {{ errors.password ? 'is-invalid' : '' }}"
-                                               placeholder="Password" />
+                                               placeholder="{{ translate('password') }}" />
                                         <div class="invalid-feedback">
                                             {{ errors.password | first }}
                                         </div>
@@ -47,19 +47,19 @@
                                     <div class="form-outline form-white mb-5">
                                         <input type="password" name="confirmPassword" required
                                                class="form-control form-control-lg {{ errors.confirmPassword ? 'is-invalid' : '' }}"
-                                               placeholder="Confirm Password" />
+                                               placeholder="{{ translate('registration:confirm_password') }}" />
                                         <div class="invalid-feedback">
                                             {{ errors.confirmPassword | first }}
                                         </div>
                                     </div>
                                     <button class="btn btn-primary bg-gradient text-white btn-lg px-5" type="submit">
-                                        Register
+                                        {{ translate('register') }}
                                     </button>
                                 </form>
                             </div>
                             <div>
-                                <p class="mb-0 text-dark">Have an account?
-                                    <a href="/login" class="text-primary fw-bold">Sign In</a>
+                                <p class="mb-0 text-dark">{{ translate('registration:already_have') }}
+                                    <a href="/login" class="text-primary fw-bold">{{ translate('sign_in') }}</a>
                                 </p>
                             </div>
                         </div>
