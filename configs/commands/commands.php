@@ -2,7 +2,8 @@
 
 declare(strict_types = 1);
 
-use App\Command\GenerateAppKeyCommand;
+/**Список команд для консольного приложения*/
+use App\Core\Command\GenerateAppKeyCommand;
 
 return [
     GenerateAppKeyCommand::class,

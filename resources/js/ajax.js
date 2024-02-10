@@ -1,3 +1,8 @@
+const SERVER_ERROR_BAD_REQUEST = 400;
+const SERVER_ERROR_NOT_FOUND = 404;
+const SERVER_ERROR_VALIDATION = 422;
+
+
 const ajax = (url, method = 'get', data = {}, domElement = null) => {
     method = method.toLowerCase()
 
@@ -40,12 +45,12 @@ const ajax = (url, method = 'get', data = {}, domElement = null) => {
             clearValidationErrors(domElement)
         }
 
-        if (! response.ok) {
-            if (response.status === 422) {
+        if (!response.ok) {
+            if (response.status === SERVER_ERROR_VALIDATION) {
                 response.json().then(errors => {
                     handleValidationErrors(errors, domElement)
                 })
-            } else if (response.status === 404) {
+            } else if (response.status === SERVER_ERROR_NOT_FOUND) {
                 alert(response.statusText)
             }
         }
@@ -54,13 +59,13 @@ const ajax = (url, method = 'get', data = {}, domElement = null) => {
     })
 }
 
-const get  = (url, data) => ajax(url, 'get', data)
+const get = (url, data) => ajax(url, 'get', data)
 const post = (url, data, domElement) => ajax(url, 'post', data, domElement)
-const del  = (url, data) => ajax(url, 'delete', data)
+const del = (url, data) => ajax(url, 'delete', data)
 
 function handleValidationErrors(errors, domElement) {
     for (const name in errors) {
-        const element = domElement.querySelector(`[name="${ name }"]`)
+        const element = domElement.querySelector(`[name="${name}"]`)
 
         element.classList.add('is-invalid')
 
@@ -84,12 +89,12 @@ function clearValidationErrors(domElement) {
 }
 
 function getCsrfFields() {
-    const csrfNameField  = document.querySelector('#csrfName')
+    const csrfNameField = document.querySelector('#csrfName')
     const csrfValueField = document.querySelector('#csrfValue')
-    const csrfNameKey    = csrfNameField.getAttribute('name')
-    const csrfName       = csrfNameField.content
-    const csrfValueKey   = csrfValueField.getAttribute('name')
-    const csrfValue      = csrfValueField.content
+    const csrfNameKey = csrfNameField.getAttribute('name')
+    const csrfName = csrfNameField.content
+    const csrfValueKey = csrfValueField.getAttribute('name')
+    const csrfValue = csrfValueField.content
 
     return {
         [csrfNameKey]: csrfName,

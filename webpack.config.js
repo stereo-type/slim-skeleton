@@ -20,9 +20,6 @@ Encore
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
     .addEntry("app", "./resources/js/app.js")
-    .addEntry("dashboard", "./resources/js/dashboard.js")
-    .addEntry("categories", "./resources/js/categories.js")
-    .addEntry("transactions", "./resources/js/transactions.js")
     .addEntry("auth", "./resources/js/auth.js")
     .addEntry("verify", "./resources/js/verify.js")
     .addEntry("profile", "./resources/js/profile.js")

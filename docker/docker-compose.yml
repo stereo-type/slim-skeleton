@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.3'
 
 services:
   app:
@@ -8,8 +8,8 @@ services:
       args:
         USER_ID: '${WWWUSER:-1000}'
         GROUP_ID: '${WWWGROUP:-1000}'
-        USER: '${USER:-whoami}'
-    container_name: expennies-app
+        USER: '${APP_USER}'
+    container_name: "${APP_NAME}-app"
     restart: always
     working_dir: /var/www/
     extra_hosts:
@@ -21,36 +21,36 @@ services:
       - ./local.ini:/usr/local/etc/php/conf.d/local.ini
   nginx:
     image: nginx:1.19-alpine
-    container_name: expennies-nginx
+    container_name: "${APP_NAME}-nginx"
     restart: always
     ports:
-      - "8000:80"
+      - "80:80"
     volumes:
       - ../:/var/www
       - ./nginx:/etc/nginx/conf.d
   db:
-    container_name: expennies-db
+    container_name: "${APP_NAME}-db"
     image: mysql:8.0
     volumes:
       - ./storage/mysql:/var/lib/mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: '${DB_PASS}'
     ports:
       - "3306:3306"
-  mailhog:
-    container_name: expennies-mailhog
-    image: mailhog/mailhog
-    restart: always
-    logging:
-      driver: "none"
-    ports:
-      - "8025:8025"
-      - "1025:1025"
-  redis:
-    image: redis:latest
-    container_name: expennies-redis
-    restart: always
-    ports:
-      - "6379:6379"
-    command: redis-server --requirepass mypassword
+#  mailhog:
+#    container_name: slim-skeleton-mailhog
+#    image: mailhog/mailhog
+#    restart: always
+#    logging:
+#      driver: "none"
+#    ports:
+#      - "8025:8025"
+#      - "1025:1025"
+#  redis:
+#    image: redis:latest
+#    container_name: expennies-redis
+#    restart: always
+#    ports:
+#      - "6379:6379"
+#    command: redis-server --requirepass mypassword
