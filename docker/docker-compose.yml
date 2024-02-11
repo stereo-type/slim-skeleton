@@ -15,7 +15,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "9003:9003"
+      - "19003:9003"
     volumes:
       - ../:/var/www
       - ./local.ini:/usr/local/etc/php/conf.d/local.ini
@@ -24,7 +24,7 @@ services:
     container_name: "${APP_NAME}-nginx"
     restart: always
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ../:/var/www
       - ./nginx:/etc/nginx/conf.d
@@ -37,7 +37,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: '${DB_PASS}'
     ports:
-      - "3306:3306"
+      - "3307:3306"
   mailhog:
     container_name: "${APP_NAME}-mailhog"
     image: mailhog/mailhog
