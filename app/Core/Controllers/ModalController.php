@@ -45,7 +45,8 @@ class ModalController
             'modal.twig',
             [
                 'modalId' => $body['modalId'] ?? rand(0, 1000),
-                'modalContent' => $body['modalContent']
+                'modalContent' => $body['modalContent'] ?? '',
+                'modalClass' => $body['modalClass'] ?? '',
             ]
         );
 

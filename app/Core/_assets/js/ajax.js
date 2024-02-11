@@ -19,7 +19,9 @@ Promise.prototype.aggregate = async function (domElement = null) {
         } else {
             response.json().then(data => {
                 let message = 'Не предвиденная ошибка';
+                let modalClass = '';
                 if (config.DEBUG) {
+                    modalClass = 'modal-xl';
                     const errorDiv = document.createElement('div')
                     errorDiv.classList.add('alert')
                     errorDiv.classList.add('alert-danger')
@@ -45,7 +47,7 @@ Promise.prototype.aggregate = async function (domElement = null) {
                         message = data.message;
                     }
                 }
-                return createModal(message);
+                return createErrorModal(message,modalClass);
             })
         }
     }
@@ -121,16 +123,16 @@ function handleValidationErrors(errors, domElement) {
 }
 
 // Функция для создания модального окна
-function createModal(error) {
+function createErrorModal(error, modalClass = '') {
     const modalId = 'errorModal';
     let modalWrapper = document.getElementById(`coreModal-${modalId}`);
     if (modalWrapper) {
         modalWrapper.remove();
     }
-
     modal({
         'modalId': modalId,
-        'modalContent': error
+        'modalContent': error,
+        'modalClass': modalClass
     });
 }
 
