@@ -35,3 +35,8 @@ svg.icon {
   border-radius: 1rem;
   padding: 20px 25px 25px;
 }
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}

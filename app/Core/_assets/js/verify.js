@@ -1,9 +1,10 @@
-import {post, aggregate} from './ajax';
-import config from "./config";
+import {post} from './ajax';
 
 window.addEventListener('DOMContentLoaded', function () {
     document.querySelector('.resend-verify').addEventListener('click', function (event) {
         post(`/verify`)
-            .then((response) => aggregate(response, null, null, config.DEBUG))
+            .then(function (response) {
+                if (response.ok) alert('A new email verification has been successful sent!');
+            })
     })
 })

@@ -1,26 +1,58 @@
-import axios from 'axios';
+import {modal} from "./modal";
+import config from "./config";
 
 const SERVER_ERROR_BAD_REQUEST = 400;
 const SERVER_ERROR_NOT_FOUND = 404;
 const SERVER_ERROR_VALIDATION = 422;
 
 
-const ajax = (url, method = 'get', data = {}, domElement = null) => {
+Promise.prototype.aggregate = async function (domElement = null) {
+    const response = await this;
+    if (domElement) {
+        clearValidationErrors(domElement)
+    }
+    if (!response.ok) {
+        if (response.status === SERVER_ERROR_VALIDATION) {
+            response.json().then(errors => {
+                handleValidationErrors(errors, domElement)
+            })
+        } else {
+            response.json().then(data => {
+                let message = 'Не предвиденная ошибка';
+                if (config.DEBUG) {
+                    const errorDiv = document.createElement('div')
+                    errorDiv.classList.add('alert')
+                    errorDiv.classList.add('alert-danger')
 
-    // axios.get('/user?ID=12345')
-    //     .then(function (response) {
-    //         // handle success
-    //         console.log(response);
-    //     })
-    //     .catch(function (error) {
-    //         // handle error
-    //         console.log(error);
-    //     })
-    //     .finally(function () {
-    //         // always executed
-    //     });
-    // return;
+                    const errorMsg = document.createElement('p');
+                    errorMsg.textContent = data.message ?? message;
 
+                    const errorList = document.createElement('ul');
+                    errorList.classList.add('error-list');
+
+                    (data.trace ?? []).forEach(error => {
+                        const errorItem = document.createElement('li');
+                        errorItem.textContent = error['class'] + ' - ' + error['function'] + ' - ' + error['line'];
+                        errorList.appendChild(errorItem);
+                    });
+
+                    errorDiv.appendChild(errorMsg);
+                    errorDiv.appendChild(errorList);
+
+                    message = errorDiv.outerHTML;
+                } else {
+                    if (data.message) {
+                        message = data.message;
+                    }
+                }
+                return createModal(message);
+            })
+        }
+    }
+    return response;
+}
+
+const ajax = (url, method = 'get', data = {}, domElement = null, aggregate = true) => {
     method = method.toLowerCase()
 
     let options = {
@@ -57,69 +89,51 @@ const ajax = (url, method = 'get', data = {}, domElement = null) => {
         url += '?' + (new URLSearchParams(data)).toString();
     }
 
-    return fetch(url, options).then(response => {
-        if (domElement) {
-            clearValidationErrors(domElement)
-        }
-
-        if (!response.ok) {
-            if (response.status === SERVER_ERROR_VALIDATION) {
-                response.json().then(errors => {
-                    handleValidationErrors(errors, domElement)
-                })
-            } else if (response.status === SERVER_ERROR_NOT_FOUND) {
-                alert(response.statusText)
-            }
-        }
-
-        return response
-    })
+    if (aggregate) {
+        return fetch(url, options).aggregate(domElement);
+    } else {
+        return fetch(url, options);
+    }
 }
 
 const get = (url, data) => ajax(url, 'get', data)
-const post = (url, data, domElement) => ajax(url, 'post', data, domElement)
+const post = (url, data, domElement = null, aggregate = true) => ajax(url, 'post', data, domElement, aggregate)
 const del = (url, data) => ajax(url, 'delete', data)
 
-const aggregate = function (response, onSuccess = null, onError = null, log = true) {
-    if (response.ok) {
-        if (onSuccess != null) {
-            onSuccess(response);
-        } else {
-            alert('A new email verification has been successful sent!')
-        }
-    } else {
-        if (onError != null) {
-            onError(response);
-        } else {
-            if (log) {
-                const body = response.json();
-                if (body instanceof Promise) {
-                    body.then((result) => {
-                        console.log(result);
-                    });
-                }
-            }
-
-            alert(`Error code: ${response.status}. Message: ${response.statusText}`)
-        }
-    }
-    return response;
-}
 
 function handleValidationErrors(errors, domElement) {
-    for (const name in errors) {
-        const element = domElement.querySelector(`[name="${name}"]`)
+    try {
+        for (const name in errors) {
+            const element = domElement.querySelector(`[name="${name}"]`)
 
-        element.classList.add('is-invalid')
+            element.classList.add('is-invalid')
 
-        const errorDiv = document.createElement('div')
+            const errorDiv = document.createElement('div')
 
-        errorDiv.classList.add('invalid-feedback')
-        errorDiv.textContent = errors[name][0]
+            errorDiv.classList.add('invalid-feedback')
+            errorDiv.textContent = errors[name][0]
 
-        element.parentNode.append(errorDiv)
+            element.parentNode.append(errorDiv)
+        }
+    } catch (_) {
+        console.log('not found form elements');
     }
 }
+
+// Функция для создания модального окна
+function createModal(error) {
+    const modalId = 'errorModal';
+    let modalWrapper = document.getElementById(`coreModal-${modalId}`);
+    if (modalWrapper) {
+        modalWrapper.remove();
+    }
+
+    modal({
+        'modalId': modalId,
+        'modalContent': error
+    });
+}
+
 
 function clearValidationErrors(domElement) {
     domElement.querySelectorAll('.is-invalid').forEach(function (element) {
@@ -150,5 +164,4 @@ export {
     get,
     post,
     del,
-    aggregate
 }

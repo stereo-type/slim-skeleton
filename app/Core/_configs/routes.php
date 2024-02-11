@@ -2,6 +2,7 @@
 
 declare(strict_types = 1);
 
+use App\Core\Controllers\ModalController;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use App\Core\Controllers\AuthController;
@@ -26,6 +27,7 @@ return static function (App $app) {
     })->add(VerifyEmailMiddleware::class)->add(AuthMiddleware::class);
 
     $app->group('', function (RouteCollectorProxy $group) {
+        $group->post('/modal', [ModalController::class, 'show']);
         $group->post('/logout', [AuthController::class, 'logOut']);
         $group->get('/verify', [VerifyController::class, 'index']);
         $group->get('/verify/{id}/{hash}', [VerifyController::class, 'verify'])
