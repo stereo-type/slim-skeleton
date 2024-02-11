@@ -8,7 +8,7 @@ if (! Encore.isRuntimeEnvironmentConfigured()) {
     Encore.configureRuntimeEnvironment(process.env.NODE_ENV || "dev")
 }
 
-const coreResourcesPath = path.join(__dirname, 'app', 'Core', 'assets', 'js');
+const coreResourcesPath = path.join(__dirname, 'app', 'Core', '_assets', 'js');
 const projectResourcesPath = path.join(__dirname, 'resources', 'js');
 
 // Функция для добавления файлов в сборку
@@ -76,7 +76,7 @@ Encore
     })
 
     .copyFiles({
-        from: "./app/Core/assets/images",
+        from: "./app/Core/_assets/images",
         to: "images/[path][name].[hash:8].[ext]",
         pattern: /\.(png|jpg|jpeg|gif)$/
     })

@@ -15,5 +15,7 @@ class ServerStatus
     public const REDIRECT = 302;
     public const VALIDATION_ERROR = 422;
     public const TO_MANY_REQUESTS = 429;
+    public const BAD_REQUEST = 400;
+    public const NOT_FOUND_REQUEST = 404;
 
 }

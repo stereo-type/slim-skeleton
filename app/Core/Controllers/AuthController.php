@@ -17,6 +17,9 @@ use App\Core\ResponseFormatter;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 class AuthController
 {
@@ -28,11 +31,25 @@ class AuthController
     ) {
     }
 
+    /**
+     * @param  Response  $response
+     * @return Response
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
     public function loginView(Response $response): Response
     {
         return $this->twig->render($response, 'auth/login.twig');
     }
 
+    /**
+     * @param  Response  $response
+     * @return Response
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
     public function registerView(Response $response): Response
     {
         return $this->twig->render($response, 'auth/register.twig');
@@ -48,7 +65,7 @@ class AuthController
             new RegisterUserData($data['name'], $data['email'], $data['password'])
         );
 
-        return $response->withHeader('Location', '/')->withStatus(302);
+        return $response->withHeader('Location', '/')->withStatus(ServerStatus::REDIRECT);
     }
 
     public function logIn(Request $request, Response $response): Response
@@ -60,6 +77,7 @@ class AuthController
         $status = $this->auth->attemptLogin($data);
 
         if ($status === AuthAttemptStatus::FAILED) {
+            //TODO translate
             throw new ValidationException(['password' => ['You have entered an invalid username or password']]);
         }
 
@@ -82,7 +100,7 @@ class AuthController
         $data = $this->requestValidatorFactory->make(TwoFactorLoginRequestValidator::class)->validate(
             $request->getParsedBody()
         );
-
+        //TODO translate
         if (! $this->auth->attemptTwoFactorLogin($data)) {
             throw new ValidationException(['code' => ['Invalid Code']]);
         }

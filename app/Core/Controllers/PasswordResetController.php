@@ -15,6 +15,9 @@ use App\Core\Services\PasswordResetService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 class PasswordResetController
 {
@@ -27,6 +30,11 @@ class PasswordResetController
     ) {
     }
 
+    /**
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws LoaderError
+     */
     public function showForgotPasswordForm(Response $response): Response
     {
         return $this->twig->render($response, 'auth/forgot_password.twig');
@@ -51,6 +59,11 @@ class PasswordResetController
         return $response;
     }
 
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws LoaderError
+     */
     public function showResetPasswordForm(Response $response, array $args): Response
     {
         $passwordReset = $this->passwordResetService->findByToken($args['token']);

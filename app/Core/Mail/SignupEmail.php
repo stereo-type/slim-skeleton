@@ -31,6 +31,8 @@ class SignupEmail
             $expirationDate
         );
 
+
+        throw new \RuntimeException('exception');
         $message = (new TemplatedEmail())
             ->from($this->config->get('mailer.from'))
             ->to($email)

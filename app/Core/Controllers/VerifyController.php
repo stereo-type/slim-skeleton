@@ -10,7 +10,11 @@ use App\Core\Entity\User;
 use App\Core\Mail\SignupEmail;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use RuntimeException;
 use Slim\Views\Twig;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 class VerifyController
 {
@@ -21,6 +25,11 @@ class VerifyController
     ) {
     }
 
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws LoaderError
+     */
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         if ($request->getAttribute('user')->getVerifiedAt()) {
@@ -32,12 +41,14 @@ class VerifyController
 
     public function verify(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+//        //TODO WTF???
+//        throw new RuntimeException('asas2');
         /** @var User $user */
         $user = $request->getAttribute('user');
 
         if (! hash_equals((string) $user->getId(), $args['id'])
             || ! hash_equals(sha1($user->getEmail()), $args['hash'])) {
-            throw new \RuntimeException('Verification failed');
+            throw new RuntimeException('Verification failed');
         }
 
         if (! $user->getVerifiedAt()) {
@@ -49,6 +60,7 @@ class VerifyController
 
     public function resend(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        throw new RuntimeException('Test excemption message');
         $this->signupEmail->send($request->getAttribute('user'));
 
         return $response;

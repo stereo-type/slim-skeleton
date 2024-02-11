@@ -1,9 +1,26 @@
+import axios from 'axios';
+
 const SERVER_ERROR_BAD_REQUEST = 400;
 const SERVER_ERROR_NOT_FOUND = 404;
 const SERVER_ERROR_VALIDATION = 422;
 
 
 const ajax = (url, method = 'get', data = {}, domElement = null) => {
+
+    // axios.get('/user?ID=12345')
+    //     .then(function (response) {
+    //         // handle success
+    //         console.log(response);
+    //     })
+    //     .catch(function (error) {
+    //         // handle error
+    //         console.log(error);
+    //     })
+    //     .finally(function () {
+    //         // always executed
+    //     });
+    // return;
+
     method = method.toLowerCase()
 
     let options = {
@@ -63,6 +80,32 @@ const get = (url, data) => ajax(url, 'get', data)
 const post = (url, data, domElement) => ajax(url, 'post', data, domElement)
 const del = (url, data) => ajax(url, 'delete', data)
 
+const aggregate = function (response, onSuccess = null, onError = null, log = true) {
+    if (response.ok) {
+        if (onSuccess != null) {
+            onSuccess(response);
+        } else {
+            alert('A new email verification has been successful sent!')
+        }
+    } else {
+        if (onError != null) {
+            onError(response);
+        } else {
+            if (log) {
+                const body = response.json();
+                if (body instanceof Promise) {
+                    body.then((result) => {
+                        console.log(result);
+                    });
+                }
+            }
+
+            alert(`Error code: ${response.status}. Message: ${response.statusText}`)
+        }
+    }
+    return response;
+}
+
 function handleValidationErrors(errors, domElement) {
     for (const name in errors) {
         const element = domElement.querySelector(`[name="${name}"]`)
@@ -106,5 +149,6 @@ export {
     ajax,
     get,
     post,
-    del
+    del,
+    aggregate
 }

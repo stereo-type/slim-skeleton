@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Core\Config;
 use App\Core\Enum\AppEnvironment;
 use App\Core\Middleware\CsrfFieldsMiddleware;
+use App\Core\Middleware\ExceptionMiddleware;
 use App\Core\Middleware\LangTranslation;
 use App\Core\Middleware\OldFormDataMiddleware;
 use App\Core\Middleware\StartSessionsMiddleware;
@@ -35,6 +36,7 @@ return static function (App $app) {
     $app->add(ValidationExceptionMiddleware::class);
     $app->add(ValidationErrorsMiddleware::class);
     $app->add(OldFormDataMiddleware::class);
+    $app->add(ExceptionMiddleware::class);
     $app->add(StartSessionsMiddleware::class);
     $app->add(LangTranslation::class);
     if (AppEnvironment::isDevelopment($config->get('app_environment'))) {

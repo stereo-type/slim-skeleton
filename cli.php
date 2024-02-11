@@ -16,12 +16,12 @@ $config    = $container->get(Config::class);
 
 $entityManager     = $container->get(EntityManagerInterface::class);
 $dependencyFactory = DependencyFactory::fromEntityManager(
-    new PhpFile(CONFIG_PATH . '/migrations.php'),
+    new PhpFile(CORE_CONFIG_PATH . '/migrations.php'),
     new ExistingEntityManager($entityManager)
 );
 
-$migrationCommands = require CONFIG_PATH . '/commands/migration_commands.php';
-$customCommands    = require CONFIG_PATH . '/commands/commands.php';
+$migrationCommands = require CORE_CONFIG_PATH . '/commands/migration_commands.php';
+$customCommands    = require CORE_CONFIG_PATH . '/commands/commands.php';
 
 $cliApp = new Application($config->get('app_name'), $config->get('app_version'));
 

@@ -27,7 +27,10 @@ class ValidateSignatureMiddleware implements MiddlewareInterface
 
         $url       = (string) $uri->withQuery(http_build_query($queryParams));
         $signature = hash_hmac('sha256', $url, $this->config->get('app_key'));
-
+        dump($url);
+dump($signature);
+dump($originalSignature);
+die;
         if ($expiration <= time() || ! hash_equals($signature, $originalSignature)) {
             throw new \RuntimeException('Failed to verify signature');
         }

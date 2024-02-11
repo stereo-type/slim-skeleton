@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace App\Core\Command;
 
 use App\Core\Config;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,6 +21,12 @@ class GenerateAppKeyCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * @param  InputInterface  $input
+     * @param  OutputInterface  $output
+     * @return int
+     * @throws Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $hasKey = $this->config->get('app_key');
@@ -39,7 +46,7 @@ class GenerateAppKeyCommand extends Command
 
         $key = base64_encode(random_bytes(32));
 
-        $envFilePath = __DIR__ . '/../../.env';
+        $envFilePath = ROOT_PATH . '/.env';
 
         if (! file_exists($envFilePath)) {
             throw new \RuntimeException('.env file not found');
