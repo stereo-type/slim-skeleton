@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta id="csrfName" name="{{ csrf.keys.name }}" content="{{ csrf.name }}">
         <meta id="csrfValue" name="{{ csrf.keys.value }}" content="{{ csrf.value }}">
-        <title>{% block title %}Expennies{% endblock %}</title>
+        <title>{% block title %}Slim-skeleton{% endblock %}</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap"
@@ -21,21 +21,15 @@
         <div class="container">
             <header class="d-flex flex-wrap justify-content-center align-items-center py-3 mb-4">
                 <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-                    <img src="{{ asset('build/images/logo.png') }}" width="64" height="64" alt="Expennies Logo" />
-                    <span class="fs-1 fw-bold">Ex<span class="text-primary">pennies</span></span>
+                    <img src="{{ asset('build/images/logo.png') }}" width="64" height="64" alt="App Logo" />
+                    <span class="fs-1 fw-bold">Slim<span class="text-primary">Skeleton</span></span>
                 </a>
 
-                <ul class="nav nav-pills align-items-center">
-                    <li class="nav-item">
-                        <a href="/" class="nav-link fw-bold fs-5 {{ current_route == 'home' ? 'active' : '' }}" aria-current="page">Overview</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/transactions" class="nav-link fw-bold fs-5  {{ current_route == 'transactions' ? 'active' : '' }}" aria-current="page">Transactions</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/categories" class="nav-link fw-bold fs-5 {{ current_route == 'categories' ? 'active' : '' }}" aria-current="page">Categories</a>
-                    </li>
-                </ul>
+{#                <ul class="nav nav-pills align-items-center">#}
+{#                    <li class="nav-item">#}
+{#                        <a href="/" class="nav-link fw-bold fs-5 {{ current_route == 'home' ? 'active' : '' }}" aria-current="page">Overview</a>#}
+{#                    </li>#}
+{#                </ul>#}
 
                 <div class="dropdown user-dropdown-menu">
                     <a href="#" class="text-decoration-none d-flex align-items-center" id="userDropDownMenu" data-bs-toggle="dropdown"
@@ -47,12 +41,12 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="userDropDownMenu">
                         <li>
-                            <a href="/profile" class="dropdown-item">Profile</a>
+                            <a href="/profile" class="dropdown-item">{{ translate('profile') }}</a>
                         </li>
                         <li>
                             <form action="/logout" method="post">
                                 {{ csrf.fields | raw }}
-                                <button class="dropdown-item">Log Out</button>
+                                <button class="dropdown-item">{{ translate('log_out') }}</button>
                             </form>
                         </li>
                     </ul>

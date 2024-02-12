@@ -32,7 +32,7 @@ class ForgotPasswordEmail
         $message = (new TemplatedEmail())
             ->from($this->config->get('mailer.from'))
             ->to($email)
-            ->subject('Your Expennies Password Reset Instructions')
+            ->subject('Your Password Reset Instructions')
             ->htmlTemplate('emails/password_reset.html.twig')
             ->context(
                 [

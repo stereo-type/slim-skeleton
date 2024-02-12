@@ -6,7 +6,6 @@ namespace App\Core\Middleware;
 
 use App\Core\Config;
 use App\Core\Constants\ServerStatus;
-use App\Core\Contracts\SessionInterface;
 use App\Core\Enum\AppEnvironment;
 use App\Core\Exception\ValidationException;
 use App\Core\ResponseFormatter;
@@ -30,9 +29,12 @@ class ExceptionMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $debug = $this->config->get('display_error_details')
+            && AppEnvironment::isDevelopment($this->config->get('app_environment'));
+
         try {
             return $handler->handle($request);
-        } catch (ValidationException $e) {
+        } catch (ValidationException) {
             /**Обрабатывается отдельно в ValidationExceptionMiddleware*/
             return $handler->handle($request);
         } catch (Throwable $e) {
@@ -40,8 +42,7 @@ class ExceptionMiddleware implements MiddlewareInterface
 
             if ($this->requestService->isAjax($request)) {
                 $data = ['message' => $e->getMessage()];
-                if ($this->config->get('display_error_details')
-                    && AppEnvironment::isDevelopment($this->config->get('app_environment'))) {
+                if ($debug) {
                     $data['line'] = $e->getLine();
                     $data['code'] = $e->getCode();
                     $data['file'] = $e->getFile();
@@ -50,7 +51,12 @@ class ExceptionMiddleware implements MiddlewareInterface
                 return $this->responseFormatter->asJson($response->withStatus(ServerStatus::BAD_REQUEST), $data);
             }
 
-            return $response->withStatus(ServerStatus::BAD_REQUEST);
+            if ($debug) {
+                /**Обработка ошибок Slim*/
+                return $handler->handle($request);
+            }
+
+            return $response->withStatus(ServerStatus::SERVER_ERROR);
         }
     }
 }

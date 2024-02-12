@@ -25,7 +25,7 @@ class TwoFactorAuthEmail
         $message = (new TemplatedEmail())
             ->from($this->config->get('mailer.from'))
             ->to($email)
-            ->subject('Your Expennies Verification Code')
+            ->subject('Your Verification Code')
             ->htmlTemplate('emails/two_factor.html.twig')
             ->context(
                 [

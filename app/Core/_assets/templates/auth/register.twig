@@ -1,6 +1,6 @@
 {% extends 'auth/layout.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}{{ translate('sign_up') }}{% endblock %}
 
 {% block content %}
     <section class="vh-100 bg-primary bg-gradient">
@@ -12,8 +12,8 @@
                             <div class="mb-4">
                                 <h2 class="fw-bold mb-5 text-uppercase text-primary d-flex justify-content-center align-items-center">
                                     <img src="{{ asset('build/images/logo.png') }}" width="64" height="64"
-                                         alt="Expennies Logo" />
-                                    Register
+                                         alt="App Logo"/>
+                                    {{ translate('register') }}
                                 </h2>
                                 <form method="post" action="/register">
                                     {{ csrf.fields | raw }}
@@ -22,7 +22,7 @@
                                         <input type="text" name="name" required
                                                value="{{ old.name }}"
                                                class="form-control form-control-lg {{ errors.name ? 'is-invalid' : '' }}"
-                                               placeholder=" {{ translate('name') }}" />
+                                               placeholder=" {{ translate('name') }}"/>
                                         <div class="invalid-feedback">
                                             {{ errors.name | first }}
                                         </div>
@@ -31,7 +31,7 @@
                                         <input type="email" name="email" required
                                                value="{{ old.email }}"
                                                class="form-control form-control-lg {{ errors.email ? 'is-invalid' : '' }}"
-                                               placeholder="{{ translate('email') }}" />
+                                               placeholder="{{ translate('email') }}"/>
                                         <div class="invalid-feedback">
                                             {{ errors.email | first }}
                                         </div>
@@ -39,7 +39,7 @@
                                     <div class="form-outline form-white mb-4">
                                         <input type="password" name="password" required
                                                class="form-control form-control-lg {{ errors.password ? 'is-invalid' : '' }}"
-                                               placeholder="{{ translate('password') }}" />
+                                               placeholder="{{ translate('password') }}"/>
                                         <div class="invalid-feedback">
                                             {{ errors.password | first }}
                                         </div>
@@ -47,7 +47,7 @@
                                     <div class="form-outline form-white mb-5">
                                         <input type="password" name="confirmPassword" required
                                                class="form-control form-control-lg {{ errors.confirmPassword ? 'is-invalid' : '' }}"
-                                               placeholder="{{ translate('registration:confirm_password') }}" />
+                                               placeholder="{{ translate('registration:confirm_password') }}"/>
                                         <div class="invalid-feedback">
                                             {{ errors.confirmPassword | first }}
                                         </div>

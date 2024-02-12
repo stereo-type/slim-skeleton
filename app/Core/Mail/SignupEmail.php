@@ -31,12 +31,10 @@ class SignupEmail
             $expirationDate
         );
 
-
-        throw new \RuntimeException('exception');
         $message = (new TemplatedEmail())
             ->from($this->config->get('mailer.from'))
             ->to($email)
-            ->subject('Welcome to Expennies')
+            ->subject('Welcome to '.$this->config->get('app_name'))
             ->htmlTemplate('emails/signup.html.twig')
             ->context(
                 [

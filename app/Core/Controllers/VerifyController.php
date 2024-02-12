@@ -41,9 +41,7 @@ class VerifyController
 
     public function verify(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-//        //TODO WTF???
-//        throw new RuntimeException('asas2');
-        /** @var User $user */
+
         $user = $request->getAttribute('user');
 
         if (! hash_equals((string) $user->getId(), $args['id'])
@@ -60,7 +58,6 @@ class VerifyController
 
     public function resend(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        throw new RuntimeException('Test excemption message');
         $this->signupEmail->send($request->getAttribute('user'));
 
         return $response;

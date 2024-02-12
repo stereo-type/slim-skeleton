@@ -25,6 +25,7 @@ Promise.prototype.aggregate = async function (domElement = null) {
                     const errorDiv = document.createElement('div')
                     errorDiv.classList.add('alert')
                     errorDiv.classList.add('alert-danger')
+                    errorDiv.classList.add('text-break')
 
                     const errorMsg = document.createElement('p');
                     errorMsg.textContent = data.message ?? message;
@@ -132,7 +133,8 @@ function createErrorModal(error, modalClass = '') {
     modal({
         'modalId': modalId,
         'modalContent': error,
-        'modalClass': modalClass
+        'modalClass': modalClass,
+        'modalTitle': 'Ошибка',
     });
 }
 

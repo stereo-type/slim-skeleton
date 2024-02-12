@@ -1,9 +1,62 @@
+import "../css/modal.scss"
 import {post} from "./ajax";
 import {Modal} from 'bootstrap';
 
+/**Dto объекта модалки, расширяться будет по мере необходимости*/
+class ModalTemplate {
+
+    static build(data) {
+        if (data instanceof ModalTemplate) {
+            return data;
+        }
+        return ModalTemplate.fromMap(data);
+    }
+
+    constructor(
+        modalId,
+        modalType = 'html',
+        modalContent,
+        modalTitle = '',
+        modalClasses = ''
+    ) {
+        if (modalType !== 'html') {
+            //TODO
+            throw new Error('Пока не поддерживается, задел на получение контента после показа модалки из аякса!');
+        }
+        Object.assign(this, {
+            modalId,
+            modalType,
+            modalContent,
+            modalTitle,
+            modalClasses
+        });
+    }
+
+
+    static fromMap(map) {
+        return new ModalTemplate(
+            map['modalId'] ?? Math.floor(Math.random() * 1000),
+            map['modalType'] ?? 'html',
+            map['modalContent'] ?? '',
+            map['modalTitle'] ?? '',
+            map['modalClasses'] ?? ''
+        );
+    }
+
+    toMap() {
+        const obj = {};
+        const properties = Object.getOwnPropertyNames(this);
+        properties.forEach(property => {
+            obj[property] = this[property];
+        });
+        return obj;
+    }
+}
+
 const modal = function (content) {
     return post(
-        '/modal', content,
+        '/modal',
+        ModalTemplate.build(content).toMap(),
         null,
         false
     ).then((response) => {
