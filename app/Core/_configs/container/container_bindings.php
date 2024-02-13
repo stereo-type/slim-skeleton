@@ -40,22 +40,42 @@ use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Views\Twig;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
+use Symfony\Bridge\Twig\Extension\FormExtension;
+use Symfony\Bridge\Twig\Extension\TranslationExtension;
+use Symfony\Bridge\Twig\Form\TwigRendererEngine;
 use Symfony\Bridge\Twig\Mime\BodyRenderer;
 use Symfony\Component\Asset\Package;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Asset\VersionStrategy\JsonManifestVersionStrategy;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\Psr16Cache;
+use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormRegistry;
+use Symfony\Component\Form\FormRegistryInterface;
+use Symfony\Component\Form\FormRenderer;
+use Symfony\Component\Form\ResolvedFormTypeFactory;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\BodyRendererInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\CacheStorage;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
+use Symfony\Component\Translation\Translator;
+use Symfony\Component\Validator\Validation;
 use Symfony\WebpackEncoreBundle\Asset\EntrypointLookup;
 use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
 use Symfony\WebpackEncoreBundle\Twig\EntryFilesTwigExtension;
 use Twig\Extra\Intl\IntlExtension;
+
+use Twig\Loader\FilesystemLoader;
+
+use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 use function DI\create;
 
@@ -70,6 +90,31 @@ $route_file = file_exists(CONFIG_PATH.'/routes/routes.php')
 /**Если есть в проекте middleware подгружаем его иначе берем из ядра*/
 $middleware_file = file_exists(CONFIG_PATH.'/middleware.php')
     ? CONFIG_PATH.'/middleware.php' : CORE_CONFIG_PATH.'/middleware.php';
+
+
+/**
+ * @param  string  $directory
+ * @param  string  $subpath
+ * @return string[]
+ */
+function getPathsRecursively(string $directory, string $subpath): array
+{
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    $result = [];
+    foreach ($iterator as $path) {
+        if ($path->isDir()) {
+            $pathArray = explode('/', $path->getPathname());
+            if (strtolower(end($pathArray)) === strtolower($subpath)) {
+                $result[] = $path->getPathname();
+            }
+        }
+    }
+    return $result;
+}
 
 
 return [
@@ -92,8 +137,16 @@ return [
     Config::class                           => create(Config::class)->constructor(require $config_file),
     EntityManagerInterface::class           =>
         static function (Config $config) {
+            $paths = $config->get('doctrine.entity_dir');
+            //TODO навалить кешей для прода 0.001 секунды для 40 папок
+            foreach (getPathsRecursively(APP_PATH, 'entity') as $p) {
+                if (!in_array($p, $paths, true)) {
+                    $paths[] = $p;
+                }
+            }
+
             $ormConfig = ORMSetup::createAttributeMetadataConfiguration(
-                $config->get('doctrine.entity_dir'),
+                $paths,
                 $config->get('doctrine.dev_mode')
             );
 
@@ -118,18 +171,41 @@ return [
         },
     Twig::class                             =>
         static function (Config $config, ContainerInterface $container) {
-
-            $twig = Twig::create([
-                CORE_VIEW_PATH,
-                VIEW_PATH
-            ], [
+            $appVariableReflection = new \ReflectionClass('\Symfony\Bridge\Twig\AppVariable');
+            $vendorTwigBridgeDirectory = dirname($appVariableReflection->getFileName());
+            $paths = [VIEW_PATH, $vendorTwigBridgeDirectory . '/Resources/views/Form'];
+//            $t = microtime(true);
+            //TODO навалить кешей для прода 0.001 секунды для 40 папок
+            foreach (getPathsRecursively(APP_PATH, 'templates') as $p) {
+                if (!in_array($p, $paths, true)) {
+                    $paths[] = $p;
+                }
+            }
+//            dump(count($paths));
+//            $t1 = microtime(true);
+//            dump($t1-$t);
+            $twig = Twig::create($paths, [
                 'cache'       => STORAGE_PATH.'/cache/templates',
                 'auto_reload' => AppEnvironment::isDevelopment($config->get('app_environment')),
             ]);
+            $translator = new Translator('en_En');
+            $translator->addLoader('yaml', $container->get(YamlFileLoader::class));
 
+            $twig->addExtension(new TranslationExtension($translator));
             $twig->addExtension(new IntlExtension());
             $twig->addExtension(new EntryFilesTwigExtension($container));
             $twig->addExtension(new AssetExtension($container->get('webpack_encore.packages')));
+            $twig->addExtension(new FormExtension());
+            $formEngine = new TwigRendererEngine($config->get('twig.default_form_theme', ['form_div_layout.html.twig']),$twig->getEnvironment());
+            $twig->addRuntimeLoader(
+                new FactoryRuntimeLoader(
+                    [
+                        FormRenderer::class => function () use ($formEngine, $container) {
+                            return new FormRenderer($formEngine, $container->get(CsrfTokenManager::class));
+                        }
+                    ]
+                )
+            );
 
             return $twig;
         },
@@ -205,4 +281,22 @@ return [
         static fn(RedisAdapter $redisAdapter, Config $config) => new RateLimiterFactory(
             $config->get('limiter'), new CacheStorage($redisAdapter)
         ),
+    FormFactoryInterface::class             => static function () {
+        $extensions = [
+            new HttpFoundationExtension(),
+            new ValidatorExtension(Validation::createValidator()),
+
+        ];
+        $resolvedTypeFactory = new ResolvedFormTypeFactory();
+        $registry = new FormRegistry($extensions, $resolvedTypeFactory);
+        return new FormFactory($registry);
+    },
+
+//       \Symfony\Component\Form\FormFactoryInterface::class => function () {
+//    $validator = Validation::createValidator();
+//    $formFactory = Forms::createFormFactoryBuilder()
+//        ->addExtension(new ValidatorExtension($validator))
+//        ->getFormFactory();
+//    return $formFactory;
+//},
 ];

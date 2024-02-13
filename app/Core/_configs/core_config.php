@@ -69,4 +69,7 @@ return [
         'interval' => '1 minute',
         'limit'    => 25,
     ],
+    'twig' => [
+        'default_form_theme' => null
+    ],
 ];

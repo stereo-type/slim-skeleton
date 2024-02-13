@@ -1,9 +1,10 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Core\Services;
 
+use BadMethodCallException;
 use App\Core\Contracts\EntityManagerServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -22,10 +23,10 @@ class EntityManagerService implements EntityManagerServiceInterface
             return call_user_func_array([$this->entityManager, $name], $arguments);
         }
 
-        throw new \BadMethodCallException('Call to undefined method "' . $name . '"');
+        throw new BadMethodCallException('Call to undefined method "'.$name.'"');
     }
 
-    public function sync($entity = null): void
+    public function sync(?object $entity = null): void
     {
         if ($entity) {
             $this->entityManager->persist($entity);
@@ -34,7 +35,7 @@ class EntityManagerService implements EntityManagerServiceInterface
         $this->entityManager->flush();
     }
 
-    public function delete($entity, bool $sync = false): void
+    public function delete(object $entity, bool $sync = false): void
     {
         $this->entityManager->remove($entity);
 
