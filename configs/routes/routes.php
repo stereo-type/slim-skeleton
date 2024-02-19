@@ -9,23 +9,11 @@ declare(strict_types=1);
 
 
 use Slim\App;
-use Slim\Routing\RouteCollectorProxy;
-use App\Core\Middleware\AuthMiddleware;
-use App\Features\Category\Controllers\CategoryController;
 
 return static function (App $app) {
     $core_router = require CORE_CONFIG_PATH.'/routes.php';
     $core_router($app);
 
-    /**Добавлять тут свои маршруты*/
-    $app->group('/categories', function (RouteCollectorProxy $categories) {
-        $categories->get('', [CategoryController::class, 'index'])->setName('categories');
-//        $categories->post('', [CategoryController::class, 'create']);
-//        TODO temp
-        $categories->get('/create', [CategoryController::class, 'create']);
-
-//        $categories->get('/{category}', [CategoryController::class, 'get']);
-//        $categories->post('/{category}', [CategoryController::class, 'update']);
-//        $categories->delete('/{category}', [CategoryController::class, 'delete']);
-    })->add(AuthMiddleware::class);
+    $catalog_router = require APP_PATH.'/Core/Components/Catalog/_configs/routes.php';
+    $catalog_router($app);
 };
