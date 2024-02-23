@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto;
+namespace App\Core\Components\Catalog\Dto\Table;
 
-use App\Core\Components\Catalog\Dto\Collections\Attributes;
-use App\Core\Components\Catalog\Dto\Collections\Rows;
+use App\Core\Components\Catalog\Dto\Table\Collections\Attributes;
+use App\Core\Components\Catalog\Dto\Table\Collections\Rows;
 
 readonly class Body
 {
@@ -18,6 +18,14 @@ readonly class Body
         public Rows $rows,
         public Attributes $attributes = new Attributes(),
     ) {
+    }
+
+    public function toMap(): array
+    {
+        return [
+            'attributes' => $this->attributes->toMap(),
+            'rows'       => $this->rows->toMap(),
+        ];
     }
 
 }

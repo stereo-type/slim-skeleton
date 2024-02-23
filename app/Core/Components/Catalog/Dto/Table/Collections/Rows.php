@@ -7,10 +7,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Collections;
+namespace App\Core\Components\Catalog\Dto\Table\Collections;
 
-use App\Core\Components\Catalog\Dto\CellParams;
-use App\Core\Components\Catalog\Dto\Row;
+use App\Core\Components\Catalog\Dto\Table\Row;
 use Doctrine\Common\Collections\ArrayCollection;
 use InvalidArgumentException;
 
@@ -50,6 +49,18 @@ class Rows extends ArrayCollection
     public function toArray(): array
     {
         return $this->elements;
+    }
+
+    public function toMap(): array
+    {
+        $result = [];
+        foreach ($this->toArray() as $row) {
+            $result[] = [
+                'attributes' => $row->attributes->toMap(),
+                'cells'      => $row->cells->toMap(),
+            ];
+        }
+        return $result;
     }
 
     /**В этом методе атрибуты передаваемые для всех строк одинаковые

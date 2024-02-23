@@ -1,23 +1,29 @@
 {% extends 'layout.twig' %}
 
 {% block javascripts %}
-    {{ parent() }}
     {{ encore_entry_script_tags('catalog_filter') }}
+    {{ parent() }}
 {% endblock %}
 
+{% block stylesheets %}
+    {{ encore_entry_link_tags('catalog_filter') }}
+    {{ parent() }}
+{% endblock %}
 
 {% block content %}
-    <div class="categories container content-body">
-        <h1>Report</h1>
-        <form id="filterForm">
+    <div id="live-catalog-container-{{ id?? random(0, 10000) }}" class="live-catalog-container container content-body">
+        <h1>{{ tableHeading }}</h1>
+        <form id="live-catalog-filter">
             <input type="text" name="id" placeholder="ID">
             <input type="text" name="name" placeholder="Name">
             <input type="text" name="description" placeholder="Description">
+            <input type="hidden" name="content_type" value="{{ contentType ?? 'html' }}">
             <button type="submit">Filter</button>
         </form>
-        <div id="resultContainer">
+        <div id="live-catalog-table-wrap" class="table-responsive">
             {{ tableContent | raw }}
             <!-- Здесь будет отображаться результат фильтрации -->
         </div>
+        {% include 'catalog/loader.twig' with {class: 'd-none'} %}
     </div>
 {% endblock %}

@@ -7,30 +7,19 @@
 
 declare(strict_types=1);
 
+use App\Core\Components\Catalog\Demo\DemoCatalogController;
+use App\Core\Config;
+use App\Core\Enum\AppEnvironment;
+use App\Core\Middleware\AuthMiddleware;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
-use App\Core\Middleware\AuthMiddleware;
-use App\Features\Category\Controllers\CategoryController;
 
 return static function (App $app) {
-//    /**Добавлять тут свои маршруты*/
-//    $app->group('/categories', function (RouteCollectorProxy $categories) {
-//        $categories->get('', [CategoryController::class, 'index'])->setName('categories');
-////        $categories->post('', [CategoryController::class, 'create']);
-////        TODO temp
-//        $categories->get('/create', [CategoryController::class, 'create']);
-//
-////        $categories->get('/{category}', [CategoryController::class, 'get']);
-////        $categories->post('/{category}', [CategoryController::class, 'update']);
-////        $categories->delete('/{category}', [CategoryController::class, 'delete']);
-//    })->add(AuthMiddleware::class);
-
-
-    $app->group('/categories', function (RouteCollectorProxy $categories) {
-        $categories->get('', [CategoryController::class, 'index'])->setName('categories');
-        $categories->post('/filter', [CategoryController::class, 'filter']);
-    })->add(AuthMiddleware::class);
-
-
-
+    $env = $app->getContainer()?->get(Config::class)->get('app_environment')?? '';
+    if (AppEnvironment::isDevelopment($env)) {
+        $app->group('/demo_categories', function (RouteCollectorProxy $categories) {
+            $categories->get('', [DemoCatalogController::class, 'index'])->setName('categories');
+            $categories->post('/filter', [DemoCatalogController::class, 'filter']);
+        })->add(AuthMiddleware::class);
+    }
 };

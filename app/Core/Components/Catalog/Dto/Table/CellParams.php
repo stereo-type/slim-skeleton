@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto;
+namespace App\Core\Components\Catalog\Dto\Table;
 
 class CellParams
 {
@@ -21,6 +21,14 @@ class CellParams
     public function setHeader(bool $value): void
     {
         $this->header = $value;
+    }
+
+    public function toMap():array {
+        return [
+            'colspan' => $this->colspan,
+            'rowspan' => $this->rowspan,
+            'header' => $this->header,
+        ];
     }
 
     public function __toString(): string

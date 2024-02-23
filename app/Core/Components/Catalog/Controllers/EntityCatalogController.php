@@ -5,17 +5,12 @@ declare(strict_types=1);
 namespace App\Core\Components\Catalog\Controllers;
 
 use App\Core\Components\Catalog\Demo\DemoTableConstructor;
-use App\Core\Components\Catalog\Dto\Attribute;
-use App\Core\Components\Catalog\Dto\Body;
-use App\Core\Components\Catalog\Dto\Cell;
-use App\Core\Components\Catalog\Dto\Collections\Attributes;
-use App\Core\Components\Catalog\Dto\Collections\Cells;
-use App\Core\Components\Catalog\Dto\Collections\Rows;
-use App\Core\Components\Catalog\Dto\Row;
-use App\Core\Components\Catalog\Dto\Table;
+use App\Core\Components\Catalog\Dto\Table\Table;
+use App\Core\Components\Catalog\Enums\TableContentType;
 use App\Core\Contracts\EntityManagerServiceInterface;
 use App\Core\Contracts\RequestValidatorFactoryInterface;
 use App\Core\ResponseFormatter;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -69,16 +64,38 @@ class EntityCatalogController
         $tableContent = $t->shortExample();
 
 
-        return $this->twig->render($response, 'catalog/index.twig', ['tableContent' => $tableContent]);
+        return $this->twig->render(
+            $response,
+            'catalog/index.twig',
+            [
+                'tableHeading' => 'Report',
+                'tableContent' => $tableContent,
+                'contentType'  => TableContentType::html->value,
+            ],
+        );
     }
 
     public function filter(Request $request, Response $response): Response
     {
         $data = $request->getParsedBody();
+        $contentType = $data['content_type'] ?? TableContentType::html->value;
         // Здесь вы должны обработать запрос, фильтровать данные и вернуть результат
         // В данном примере предполагается, что вы будете использовать статичные данные
-        $filteredData = $this->filterData($data); // Функция, которая фильтрует данные
-        return $this->responseFormatter->asJson($response, $filteredData);
+//        $filteredData = $this->filterData($data); // Функция, которая фильтрует данные
+        $t = new DemoTableConstructor();
+
+        if ($contentType === TableContentType::html->value) {
+            $filteredData = $t->shortExample(3);
+            $response->getBody()->write($filteredData);
+            return $response;
+        }
+
+        if ($contentType === TableContentType::json->value) {
+            $filteredData = $t->shortExampleArray(3);
+            return $this->responseFormatter->asJson($response, $filteredData);
+        }
+
+        throw new InvalidArgumentException("Invalid content type $contentType");
     }
 
     public function create(Request $request, Response $response): Response

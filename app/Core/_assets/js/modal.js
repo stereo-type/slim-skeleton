@@ -34,6 +34,11 @@ class ModalTemplate {
 
 
     static fromMap(map) {
+
+        if (typeof map === 'string') {
+            map = {'modalContent': map};
+        }
+
         return new ModalTemplate(
             map['modalId'] ?? Math.floor(Math.random() * 1000),
             map['modalType'] ?? 'html',

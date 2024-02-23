@@ -7,23 +7,22 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Collections;
+namespace App\Core\Components\Catalog\Dto\Table\Collections;
 
-use App\Core\Components\Catalog\Dto\Attribute;
+use App\Core\Components\Catalog\Dto\Table\Cell;
 use Doctrine\Common\Collections\ArrayCollection;
 use InvalidArgumentException;
 
-
-class Attributes extends ArrayCollection
+class Cells extends ArrayCollection
 {
 
     /**
-     * @param  Attribute[]  $elements
+     * @param  Cell[]  $elements
      */
     public function __construct(private array $elements = [])
     {
         foreach ($this->elements as $element) {
-            if (!($element instanceof Attribute)) {
+            if (!($element instanceof Cell)) {
                 throw new InvalidArgumentException("Element must be an instance of Row");
             }
         }
@@ -32,7 +31,7 @@ class Attributes extends ArrayCollection
 
     public function add($element): void
     {
-        if (!($element instanceof Attribute)) {
+        if (!($element instanceof Cell)) {
             throw new InvalidArgumentException("Element must be an instance of Cell");
         }
 
@@ -40,33 +39,23 @@ class Attributes extends ArrayCollection
     }
 
     /**
-     * @return Attribute[]
+     * @return Cell[]
      */
     public function toArray(): array
     {
         return $this->elements;
     }
 
-    public function __toString(): string
+    public function toMap(): array
     {
-        return implode(' ', $this->toArray());
-    }
-
-    public static function fromArray(iterable $array): Attributes
-    {
-        if ($array instanceof self) {
-            return $array;
+        $result = [];
+        foreach ($this->toArray() as $cell) {
+            $result[] = [
+                'attributes'  => $cell->attributes->toMap(),
+                'data'        => $cell->data,
+                'cell_params' => $cell->params->toMap(),
+            ];
         }
-
-        $attributes = [];
-        foreach ($array as $key => $value) {
-            if ($value instanceof Attribute) {
-                $attributes [] = $value;
-            } else {
-                $attributes [] = new Attribute($key, $value);
-            }
-        }
-        return new Attributes($attributes);
+        return $result;
     }
-
 }

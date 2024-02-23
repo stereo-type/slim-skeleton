@@ -9,14 +9,14 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Demo;
 
-use App\Core\Components\Catalog\Dto\Attribute;
-use App\Core\Components\Catalog\Dto\Body;
-use App\Core\Components\Catalog\Dto\Cell;
-use App\Core\Components\Catalog\Dto\Collections\Attributes;
-use App\Core\Components\Catalog\Dto\Collections\Cells;
-use App\Core\Components\Catalog\Dto\Collections\Rows;
-use App\Core\Components\Catalog\Dto\Row;
-use App\Core\Components\Catalog\Dto\Table;
+use App\Core\Components\Catalog\Dto\Table\Attribute;
+use App\Core\Components\Catalog\Dto\Table\Body;
+use App\Core\Components\Catalog\Dto\Table\Cell;
+use App\Core\Components\Catalog\Dto\Table\Collections\Attributes;
+use App\Core\Components\Catalog\Dto\Table\Collections\Cells;
+use App\Core\Components\Catalog\Dto\Table\Collections\Rows;
+use App\Core\Components\Catalog\Dto\Table\Row;
+use App\Core\Components\Catalog\Dto\Table\Table;
 
 class DemoTableConstructor
 {
@@ -62,7 +62,7 @@ class DemoTableConstructor
         return $table->render();
     }
 
-    public function shortExample(): string
+    private function data(int $count = 0): array
     {
         $head = ['№', 'Название', 'Управление'];
         $rows = [
@@ -73,15 +73,27 @@ class DemoTableConstructor
             Row::build(['1221', 'Тест11', '3aaх'], ['style' => 'color:blue']),
             Row::build(['1', 'Тест', 'х'], ['style' => 'background-color: red']),
             Row::build(['1221', 'Тест11', '3aaх'], ['style' => 'color:blue']),
-            Row::build(['1', 'Тест', 'х'], ['style' => 'background-color: red']),
-            Row::build(['1221', 'Тест11', '3aaх'], ['style' => 'color:blue']),
-            Row::build(['1', 'Тест', 'х'], ['style' => 'background-color: red']),
-            Row::build(['1221', 'Тест11', '3aaх'], ['style' => 'color:blue']),
-            Row::build(['1', 'Тест', 'х'], ['style' => 'background-color: red']),
+            ['1221', 'Тест11', '3aaх'],
+            ['1221', 'Тест11', '3aaх'],
+            ['1221', 'Тест11', '3aaх'],
+            ['1221', 'Тест11', '3aaх'],
+            ['1221', 'Тест11', '3aaх'],
             ['1221', 'Тест11', '3aaх'],
         ];
 
-        return Table::build($rows, $head, ['width' => '100%']);
+        return ['head' => $head, 'rows' => $count > 0 && $count< count($rows) ? array_slice($rows,0, $count): $rows];
+    }
+
+    public function shortExample(int $count = 0): string
+    {
+        ['head' => $head, 'rows' => $rows] = $this->data($count);
+        return Table::build($rows, $head)->render();
+    }
+
+    public function shortExampleArray(int $count = 0): array
+    {
+        ['head' => $head, 'rows' => $rows] = $this->data($count);
+        return Table::build($rows, $head, ['width' => '100%'])->toMap();
     }
 
 }
