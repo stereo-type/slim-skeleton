@@ -1,8 +1,8 @@
 import {modal} from "./modal";
 import config from "./config";
 
-const SERVER_ERROR_BAD_REQUEST = 400;
-const SERVER_ERROR_NOT_FOUND = 404;
+// const SERVER_ERROR_BAD_REQUEST = 400;
+// const SERVER_ERROR_NOT_FOUND = 404;
 const SERVER_ERROR_VALIDATION = 422;
 
 
@@ -130,7 +130,7 @@ function createErrorModal(error, modalClass = '') {
     if (modalWrapper) {
         modalWrapper.remove();
     }
-    modal({
+    return modal({
         'modalId': modalId,
         'modalContent': error,
         'modalClass': modalClass,

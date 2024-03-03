@@ -24,7 +24,7 @@ readonly class Table
     ) {
         $this->attributes = Attributes::mergeAttributes(
             Attributes::MERGE_JOIN,
-            $attributes,
+            Attributes::fromArray($attributes),
             Attributes::fromArray(['class' => 'table table-hover table-striped table-sm']),
         );
     }
@@ -37,8 +37,17 @@ readonly class Table
      */
     public static function build(iterable $rows, iterable $head = [], iterable $attributes = []): Table
     {
+        $headRows = [];
+        if ($head instanceof Rows) {
+            $headRows = $head;
+        } else {
+            $firstItem = reset($head);
+            if (is_string($firstItem) || $firstItem instanceof Row) {
+                $headRows = [$head];
+            }
+        }
         $body = new Body(Rows::fromArray($rows));
-        $header = new Header(Rows::fromArray([$head]));
+        $header = new Header(Rows::fromArray($headRows));
         $attr = Attributes::fromArray($attributes);
         return (new Table(body: $body, header: $header, attributes: $attr));
     }
@@ -66,13 +75,14 @@ readonly class Table
     public function toMap(): array
     {
         return [
-            'attributes' => $this->attributes->toMap(),
-            'header'     => $this->header->toMap(),
-            'body'       => $this->body->toMap(),
+            'struct' => [
+                'attributes' => $this->attributes->toMap(),
+                'header'     => $this->header->toMap(),
+                'body'       => $this->body->toMap(),
+            ],
+            'table'  => $this->render(),
         ];
     }
-
-
 
 
 }

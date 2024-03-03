@@ -7,3 +7,20 @@
 //  font-family: 'Roboto', sans-serif !important;
 //}
 
+.form-control {
+  width: unset;
+}
+
+select.form-control {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+  }
+}
+
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('./../fonts/Roboto/Roboto-Medium.ttf') format('ttf');
+}

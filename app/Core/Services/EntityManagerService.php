@@ -11,9 +11,9 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * @mixin EntityManagerInterface
  */
-class EntityManagerService implements EntityManagerServiceInterface
+readonly class EntityManagerService implements EntityManagerServiceInterface
 {
-    public function __construct(protected readonly EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager)
     {
     }
 

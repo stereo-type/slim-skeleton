@@ -4,15 +4,16 @@ declare(strict_types = 1);
 
 namespace App\Core;
 
+use DateTime;
 use Slim\Interfaces\RouteParserInterface;
 
-class SignedUrl
+readonly class SignedUrl
 {
-    public function __construct(private readonly Config $config, private readonly RouteParserInterface $routeParser)
+    public function __construct(private Config $config, private RouteParserInterface $routeParser)
     {
     }
 
-    public function fromRoute(string $routeName, array $routeParams, \DateTime $expirationDate): string
+    public function fromRoute(string $routeName, array $routeParams, DateTime $expirationDate): string
     {
         $expiration  = $expirationDate->getTimestamp();
         $queryParams = ['expiration' => $expiration];

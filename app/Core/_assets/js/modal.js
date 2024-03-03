@@ -77,7 +77,7 @@ const modal = function (content) {
 
                     const modal = new Modal(modalWrapper);
                     modalWrapper.addEventListener('click', function (evt) {
-                        if (evt.target && evt.target.matches('[data-dismiss="modal"]')) {
+                        if (evt.target && evt.target instanceof Element && evt.target.matches('[data-dismiss="modal"]')) {
                             modal.hide(); // Здесь предполагается, что у вас есть объект модального окна с методом hide()
                         }
                     });

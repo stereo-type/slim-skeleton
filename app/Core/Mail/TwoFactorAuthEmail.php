@@ -4,21 +4,27 @@ declare(strict_types = 1);
 
 namespace App\Core\Mail;
 
-use App\Core\Config;
-use App\Core\Entity\UserLoginCode;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\BodyRendererInterface;
+use App\Core\Config;
+use App\Core\Entity\UserLoginCode;
 
-class TwoFactorAuthEmail
+readonly class TwoFactorAuthEmail
 {
     public function __construct(
-        private readonly Config $config,
-        private readonly MailerInterface $mailer,
-        private readonly BodyRendererInterface $renderer
+        private Config $config,
+        private MailerInterface $mailer,
+        private BodyRendererInterface $renderer
     ) {
     }
 
+    /**
+     * @param  UserLoginCode  $userLoginCode
+     * @return void
+     * @throws TransportExceptionInterface
+     */
     public function send(UserLoginCode $userLoginCode): void
     {
         $email   = $userLoginCode->getUser()->getEmail();

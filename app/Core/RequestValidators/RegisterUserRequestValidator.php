@@ -10,9 +10,9 @@ use App\Core\Entity\User;
 use App\Core\Exception\ValidationException;
 use Valitron\Validator;
 
-class RegisterUserRequestValidator implements RequestValidatorInterface
+readonly class RegisterUserRequestValidator implements RequestValidatorInterface
 {
-    public function __construct(private readonly EntityManagerServiceInterface $entityManager)
+    public function __construct(private EntityManagerServiceInterface $entityManager)
     {
     }
 

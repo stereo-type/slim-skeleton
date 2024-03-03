@@ -2,6 +2,53 @@
 
 declare(strict_types=1);
 
+use App\Core\_configs\builder\twig\Builder;
+use App\Core\Services\Translator;
+use Clockwork\Clockwork;
+use Clockwork\DataSource\DoctrineDataSource;
+use Clockwork\Storage\FileStorage;
+
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\SimpleCache\CacheInterface;
+
+use Slim\App;
+use Slim\Csrf\Guard;
+use Slim\Factory\AppFactory;
+use Slim\Interfaces\RouteParserInterface;
+use Slim\Views\Twig;
+use League\Flysystem\Filesystem;
+
+use Symfony\Bridge\Twig\Mime\BodyRenderer;
+use Symfony\Component\Asset\Package;
+use Symfony\Component\Asset\Packages;
+use Symfony\Component\Asset\VersionStrategy\JsonManifestVersionStrategy;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Psr16Cache;
+use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormRegistry;
+use Symfony\Component\Form\ResolvedFormTypeFactory;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mime\BodyRendererInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\Storage\CacheStorage;
+use Symfony\Component\Validator\Validation;
+use Symfony\WebpackEncoreBundle\Asset\EntrypointLookup;
+use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
+
+use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\ORMSetup;
+use DoctrineExtensions\Query\Mysql\DateFormat;
+use DoctrineExtensions\Query\Mysql\Month;
+use DoctrineExtensions\Query\Mysql\Year;
+
 use App\Core\Auth;
 use App\Core\Config;
 use App\Core\Contracts\EntityManagerServiceInterface;
@@ -11,7 +58,6 @@ use App\Core\Contracts\User\AuthInterface;
 use App\Core\Contracts\User\UserProviderServiceInterface;
 use App\Core\Csrf;
 use App\Core\DataObjects\SessionConfig;
-use App\Core\Enum\AppEnvironment;
 use App\Core\Enum\SameSite;
 use App\Core\Enum\StorageDriver;
 use App\Core\Filters\UserFilter;
@@ -20,62 +66,6 @@ use App\Core\RouteEntityBindingStrategy;
 use App\Core\Services\EntityManagerService;
 use App\Core\Services\UserProviderService;
 use App\Core\Session;
-use Clockwork\Clockwork;
-use Clockwork\DataSource\DoctrineDataSource;
-use Clockwork\Storage\FileStorage;
-use Doctrine\DBAL\DriverManager;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\ORMSetup;
-use DoctrineExtensions\Query\Mysql\DateFormat;
-use DoctrineExtensions\Query\Mysql\Month;
-use DoctrineExtensions\Query\Mysql\Year;
-use League\Flysystem\Filesystem;
-use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\SimpleCache\CacheInterface;
-use Slim\App;
-use Slim\Csrf\Guard;
-use Slim\Factory\AppFactory;
-use Slim\Interfaces\RouteParserInterface;
-use Slim\Views\Twig;
-use Symfony\Bridge\Twig\Extension\AssetExtension;
-use Symfony\Bridge\Twig\Extension\FormExtension;
-use Symfony\Bridge\Twig\Extension\TranslationExtension;
-use Symfony\Bridge\Twig\Form\TwigRendererEngine;
-use Symfony\Bridge\Twig\Mime\BodyRenderer;
-use Symfony\Component\Asset\Package;
-use Symfony\Component\Asset\Packages;
-use Symfony\Component\Asset\VersionStrategy\JsonManifestVersionStrategy;
-use Symfony\Component\Cache\Adapter\RedisAdapter;
-use Symfony\Component\Cache\Psr16Cache;
-use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
-use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormFactory;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Form\FormRegistry;
-use Symfony\Component\Form\FormRegistryInterface;
-use Symfony\Component\Form\FormRenderer;
-use Symfony\Component\Form\ResolvedFormTypeFactory;
-use Symfony\Component\Mailer\Mailer;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mailer\Transport;
-use Symfony\Component\Mime\BodyRendererInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
-use Symfony\Component\RateLimiter\Storage\CacheStorage;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use Symfony\Component\Translation\Loader\YamlFileLoader;
-use Symfony\Component\Translation\Translator;
-use Symfony\Component\Validator\Validation;
-use Symfony\WebpackEncoreBundle\Asset\EntrypointLookup;
-use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
-use Symfony\WebpackEncoreBundle\Twig\EntryFilesTwigExtension;
-use Twig\Extra\Intl\IntlExtension;
-
-use Twig\Loader\FilesystemLoader;
-
-use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 use function DI\create;
 
@@ -92,32 +82,11 @@ $middleware_file = file_exists(CONFIG_PATH.'/middleware.php')
     ? CONFIG_PATH.'/middleware.php' : CORE_CONFIG_PATH.'/middleware.php';
 
 
-/**
- * @param  string  $directory
- * @param  string  $subpath
- * @return string[]
- */
-function getPathsRecursively(string $directory, string $subpath): array
-{
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::SELF_FIRST
-    );
+require_once __DIR__.'/../utils.php';
 
-    $result = [];
-    foreach ($iterator as $path) {
-        if ($path->isDir()) {
-            $pathArray = explode('/', $path->getPathname());
-            if (strtolower(end($pathArray)) === strtolower($subpath)) {
-                $result[] = $path->getPathname();
-            }
-        }
-    }
-    return $result;
-}
+$catalogComponentBindings = include APP_PATH.'/Core/Components/Catalog/_configs/container_bindings.php';
 
-
-return [
+$coreBindings = [
     App::class                              =>
         static function (ContainerInterface $container) use ($middleware_file, $route_file) {
             AppFactory::setContainer($container);
@@ -152,15 +121,15 @@ return [
 
             $ormConfig->addFilter('user', UserFilter::class);
 
-            if (class_exists('DoctrineExtensions\Query\Mysql\Year')) {
+            if (class_exists(Year::class)) {
                 $ormConfig->addCustomDatetimeFunction('YEAR', Year::class);
             }
 
-            if (class_exists('DoctrineExtensions\Query\Mysql\Month')) {
+            if (class_exists(Month::class)) {
                 $ormConfig->addCustomDatetimeFunction('MONTH', Month::class);
             }
 
-            if (class_exists('DoctrineExtensions\Query\Mysql\DateFormat')) {
+            if (class_exists(DateFormat::class)) {
                 $ormConfig->addCustomStringFunction('DATE_FORMAT', DateFormat::class);
             }
 
@@ -171,43 +140,7 @@ return [
         },
     Twig::class                             =>
         static function (Config $config, ContainerInterface $container) {
-            $appVariableReflection = new \ReflectionClass('\Symfony\Bridge\Twig\AppVariable');
-            $vendorTwigBridgeDirectory = dirname($appVariableReflection->getFileName());
-            $paths = [VIEW_PATH, $vendorTwigBridgeDirectory . '/Resources/views/Form'];
-//            $t = microtime(true);
-            //TODO навалить кешей для прода 0.001 секунды для 40 папок
-            foreach (getPathsRecursively(APP_PATH, 'templates') as $p) {
-                if (!in_array($p, $paths, true)) {
-                    $paths[] = $p;
-                }
-            }
-//            dump(count($paths));
-//            $t1 = microtime(true);
-//            dump($t1-$t);
-            $twig = Twig::create($paths, [
-                'cache'       => STORAGE_PATH.'/cache/templates',
-                'auto_reload' => AppEnvironment::isDevelopment($config->get('app_environment')),
-            ]);
-            $translator = new Translator('en_En');
-            $translator->addLoader('yaml', $container->get(YamlFileLoader::class));
-
-            $twig->addExtension(new TranslationExtension($translator));
-            $twig->addExtension(new IntlExtension());
-            $twig->addExtension(new EntryFilesTwigExtension($container));
-            $twig->addExtension(new AssetExtension($container->get('webpack_encore.packages')));
-            $twig->addExtension(new FormExtension());
-            $formEngine = new TwigRendererEngine($config->get('twig.default_form_theme', ['form_div_layout.html.twig']),$twig->getEnvironment());
-            $twig->addRuntimeLoader(
-                new FactoryRuntimeLoader(
-                    [
-                        FormRenderer::class => function () use ($formEngine, $container) {
-                            return new FormRenderer($formEngine, $container->get(CsrfTokenManager::class));
-                        }
-                    ]
-                )
-            );
-
-            return $twig;
+            return (new Builder($config, $container))->twig();
         },
     /**
      * The following two bindings are needed for EntryFilesTwigExtension & AssetExtension to work for Twig
@@ -266,7 +199,9 @@ return [
         },
     BodyRendererInterface::class            => static fn(Twig $twig) => new BodyRenderer($twig->getEnvironment()),
     RouteParserInterface::class             => static fn(App $app) => $app->getRouteCollector()->getRouteParser(),
-    CacheInterface::class                   => static fn(RedisAdapter $redisAdapter) => new Psr16Cache($redisAdapter),
+    CacheInterface::class                   => static fn(RedisAdapter $redisAdapter) => new Psr16Cache(
+        $redisAdapter
+    ),
     RedisAdapter::class                     =>
         static function (Config $config) {
             $redis = new Redis();
@@ -291,12 +226,7 @@ return [
         $registry = new FormRegistry($extensions, $resolvedTypeFactory);
         return new FormFactory($registry);
     },
-
-//       \Symfony\Component\Form\FormFactoryInterface::class => function () {
-//    $validator = Validation::createValidator();
-//    $formFactory = Forms::createFormFactoryBuilder()
-//        ->addExtension(new ValidatorExtension($validator))
-//        ->getFormFactory();
-//    return $formFactory;
-//},
+    Translator::class                       => static fn(Config $config) => new Translator($config->get('lang'))
 ];
+
+return $coreBindings + $catalogComponentBindings;

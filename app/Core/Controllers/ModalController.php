@@ -9,24 +9,24 @@ declare(strict_types=1);
 
 namespace App\Core\Controllers;
 
-
-use App\Core\ResponseFormatter;
-use App\Core\Services\RequestService;
+use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Views\Twig;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use App\Core\ResponseFormatter;
+use App\Core\Services\RequestService;
 
-class ModalController
+readonly class ModalController
 {
 
 
     public function __construct(
-        private readonly Twig $twig,
-        private readonly RequestService $requestService,
-        private readonly ResponseFormatter $responseFormatter
+        private Twig $twig,
+        private RequestService $requestService,
+        private ResponseFormatter $responseFormatter
     ) {
     }
 
@@ -37,6 +37,7 @@ class ModalController
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws Exception
      */
     public function show(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -44,7 +45,7 @@ class ModalController
         $modal = $this->twig->fetch(
             'modal.twig',
             [
-                'modalId' => $body['modalId'] ?? rand(0, 1000),
+                'modalId' => $body['modalId'] ?? random_int(0, 1000),
                 'modalContent' => $body['modalContent'] ?? '',
                 'modalClass' => $body['modalClass'] ?? '',
             ]

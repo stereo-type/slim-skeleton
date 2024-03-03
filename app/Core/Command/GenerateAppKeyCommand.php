@@ -6,6 +6,7 @@ namespace App\Core\Command;
 
 use App\Core\Config;
 use Exception;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -39,7 +40,7 @@ class GenerateAppKeyCommand extends Command
                 false
             );
 
-            if (! $helper->ask($input, $output, $question)) {
+            if (method_exists($helper, 'ask') && !$helper->ask($input, $output, $question)) {
                 return Command::SUCCESS;
             }
         }
@@ -49,7 +50,7 @@ class GenerateAppKeyCommand extends Command
         $envFilePath = ROOT_PATH . '/.env';
 
         if (! file_exists($envFilePath)) {
-            throw new \RuntimeException('.env file not found');
+            throw new RuntimeException('.env file not found');
         }
 
         $envFileContent = file_get_contents($envFilePath);

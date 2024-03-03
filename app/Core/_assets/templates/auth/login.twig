@@ -27,12 +27,16 @@
                                 </h2>
                                 <form method="post" action="/login" class="login-form">
                                     <div class="form-outline form-white mb-4">
-                                        <input type="email" name="email" class="form-control form-control-lg"
+                                        <label for="email">
+                                            <input type="email" name="email" class="form-control form-control-lg"
                                                placeholder="{{ translate('email') }}" required/>
+                                        </label>
                                     </div>
                                     <div class="form-outline form-white mb-1">
-                                        <input type="password" name="password" class="form-control form-control-lg"
-                                               placeholder="{{ translate('password') }}" required/>
+                                        <label for="password">
+                                            <input type="password" name="password" class="form-control form-control-lg"
+                                                   placeholder="{{ translate('password') }}" required/>
+                                        </label>
                                     </div>
                                     <p class="mb-4 text-end">
                                         <a class="text-secondary fw-semibold"

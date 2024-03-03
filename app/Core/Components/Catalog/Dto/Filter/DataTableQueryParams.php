@@ -10,14 +10,28 @@ declare(strict_types=1);
 namespace App\Core\Components\Catalog\Dto\Filter;
 
 
+use App\Core\Components\Catalog\Dto\Filter\Type\Filter;
+
 readonly class DataTableQueryParams
 {
+    /**
+     * @param  Filters  $filters
+     * @param  int  $page
+     * @param  int  $perpage
+     * @param  string  $orderBy
+     * @param  string  $orderDir
+     */
     public function __construct(
-        public int $start,
-        public int $length,
-        public int $draw,
+        public Filters $filters,
+        public int $page = 0,
+        public int $perpage = 10,
         public string $orderBy = 'id',
         public string $orderDir = 'asc',
     ) {
     }
+    public function addFilter(Filter $filter): void
+    {
+        $this->filters->add($filter);
+    }
+
 }

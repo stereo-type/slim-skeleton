@@ -21,13 +21,13 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
-class AuthController
+readonly class AuthController
 {
     public function __construct(
-        private readonly Twig $twig,
-        private readonly RequestValidatorFactoryInterface $requestValidatorFactory,
-        private readonly AuthInterface $auth,
-        private readonly ResponseFormatter $responseFormatter
+        private Twig $twig,
+        private RequestValidatorFactoryInterface $requestValidatorFactory,
+        private AuthInterface $auth,
+        private ResponseFormatter $responseFormatter
     ) {
     }
 
@@ -91,8 +91,7 @@ class AuthController
     public function logOut(Response $response): Response
     {
         $this->auth->logOut();
-
-        return $response->withHeader('Location', '/')->withStatus(ServerStatus::VALIDATION_ERROR);
+        return $response->withHeader('Location', '/');
     }
 
     public function twoFactorLogin(Request $request, Response $response): Response

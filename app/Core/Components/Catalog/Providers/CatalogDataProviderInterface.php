@@ -9,7 +9,12 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Providers;
 
+use App\Core\Components\Catalog\Dto\Table\Table;
+
 interface CatalogDataProviderInterface
 {
 
+    public function filter_data(array $filter): Table;
+
+    public function get_table(): Table;
 }

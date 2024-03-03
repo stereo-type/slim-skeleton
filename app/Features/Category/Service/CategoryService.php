@@ -12,9 +12,9 @@ use App\Core\Contracts\EntityManagerServiceInterface;
 use App\Core\DataObjects\DataTableQueryParams;
 use App\Features\Category\Entity\Category;
 
-class CategoryService
+readonly class CategoryService
 {
-    public function __construct(private readonly EntityManagerServiceInterface $entityManager)
+    public function __construct(private EntityManagerServiceInterface $entityManager)
     {
     }
 

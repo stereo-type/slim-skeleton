@@ -17,13 +17,13 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 
-class ExceptionMiddleware implements MiddlewareInterface
+readonly class ExceptionMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly ResponseFactoryInterface $responseFactory,
-        private readonly RequestService $requestService,
-        private readonly ResponseFormatter $responseFormatter,
-        private readonly Config $config,
+        private ResponseFactoryInterface $responseFactory,
+        private RequestService $requestService,
+        private ResponseFormatter $responseFormatter,
+        private Config $config,
     ) {
     }
 

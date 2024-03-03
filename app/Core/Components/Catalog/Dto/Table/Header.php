@@ -15,16 +15,23 @@ use App\Core\Components\Catalog\Dto\Table\Collections\Rows;
 readonly class Header
 {
     public Rows $rows;
+    public Attributes $attributes;
 
     public function __construct(
         $rows = new Rows(),
-        public Attributes $attributes = new Attributes(),
+        $attributes = new Attributes(),
     ) {
         foreach ($rows->toArray() as $r) {
             foreach ($r->cells->toArray() as $c) {
                 $c->params->setHeader(true);
             }
         }
+
+        $this->attributes = Attributes::mergeAttributes(
+            Attributes::MERGE_JOIN,
+            $attributes,
+            Attributes::fromArray(['scope' => 'col']),
+        );
         $this->rows = $rows;
     }
 

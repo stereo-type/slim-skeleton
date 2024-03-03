@@ -15,6 +15,12 @@ use App\Core\Components\Catalog\Controllers\CatalogController;
 /**
  * маршруты прописаны тут
  * app/Core/Components/Catalog/_configs/routes.php
+ * $app->group('/demo_categories'...)
+ *
+ * DI прописан тут
+ * app/Core/Components/Catalog/_configs/container_bindings.php
+ * DemoCatalogController::class => ...
+ *
  *
  **/
 class DemoCatalogController extends CatalogController
@@ -23,5 +29,10 @@ class DemoCatalogController extends CatalogController
     public function get_name(): string
     {
         return 'Демо таблица';
+    }
+
+    public function get_index_route(): string
+    {
+       return '/demo_categories';
     }
 }

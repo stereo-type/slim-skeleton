@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace App\Core\Extension;
 
-use App\Core\Services\Translator;
-use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
+use Twig\Extension\AbstractExtension;
+use App\Core\Services\Translator;
 
 class TranslationExtension extends AbstractExtension
 {

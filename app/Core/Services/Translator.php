@@ -23,7 +23,7 @@ class Translator
     private function loadTranslations(): void
     {
         // Загружаем переводы из соответствующего файла
-        $translationFile = LANG_PATH."/{$this->language}.php";
+        $translationFile = LANG_PATH."/$this->language.php";
         if (file_exists($translationFile)) {
             $this->translations = include($translationFile);
         } else {

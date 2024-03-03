@@ -23,6 +23,7 @@ return [
     'dashboard'    => 'Dashboard',
     'save'         => 'Save',
     'update'       => 'Update',
+    'search'       => 'Search',
     'save_changes' => 'Save Changes',
     'code'         => 'Code',
 
