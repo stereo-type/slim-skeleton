@@ -2,7 +2,7 @@ import "../css/modal.scss"
 import {post} from "./ajax";
 import {Modal} from 'bootstrap';
 
-/**Dto объекта модалки, расширяться будет по мере необходимости*/
+/**Model объекта модалки, расширяться будет по мере необходимости*/
 class ModalTemplate {
 
     static build(data) {

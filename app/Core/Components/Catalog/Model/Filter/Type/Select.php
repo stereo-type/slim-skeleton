@@ -7,47 +7,53 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Filter\Type;
+namespace App\Core\Components\Catalog\Model\Filter\Type;
 
-use App\Core\Components\Catalog\Dto\Table\Attribute;
 use InvalidArgumentException;
-use App\Core\Components\Catalog\Dto\Table\Collections\Attributes;
+use App\Core\Components\Catalog\Model\Table\Collections\Attributes;
 use App\Core\Components\Catalog\Enum\ParamType;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
-readonly class Select extends Filter
+class Select extends Filter
 {
     private array $options;
 
     /**
-     * @param  string  $name
-     * @param  ParamType  $type
-     * @param  Attributes  $attributes
-     * @param  mixed|null  $defaultValue
-     * @param  iterable  $params
-     * @param  int  $length
+     * @param string $name
+     * @param Attributes $attributes
+     * @param mixed|null $defaultValue
+     * @param iterable $params
+     * @param int $length
+     * @param ParamType $paramType
      */
     public function __construct(
         string $name,
-        ParamType $type,
         iterable $attributes = new Attributes(),
         mixed $defaultValue = null,
         iterable $params = [],
-        int $length = self::DEFAULT_LENGTH
+        int $length = self::DEFAULT_LENGTH,
+        ParamType $paramType = ParamType::PARAM_INT
     ) {
         if (!isset($params['options'])) {
             throw new InvalidArgumentException('Select options must be specified');
         }
 
         $this->options = $params['options'];
-        parent::__construct($name, $type, $attributes, $defaultValue, $params, $length);
+        parent::__construct($name, $attributes, $defaultValue, $params, $length, $paramType);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function render(): string
     {
+        $_value = $this->paramType->clean($this->get_value());
         $html = "<select  name=\"$this->name\" $this->attributes>";
         foreach ($this->options as $key => $value) {
             $html .= "<option value=\"$key\"";
-            if ($this->defaultValue === $key) {
+            if ($_value === $this->paramType->clean($key)) {
                 $html .= " selected=\"selected\"";
             }
             $html .= '>';

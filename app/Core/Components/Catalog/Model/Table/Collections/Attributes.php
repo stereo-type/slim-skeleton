@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Table\Collections;
+namespace App\Core\Components\Catalog\Model\Table\Collections;
 
-use App\Core\Components\Catalog\Dto\Table\Attribute;
+use App\Core\Components\Catalog\Model\Table\Attribute;
 use Doctrine\Common\Collections\ArrayCollection;
 use InvalidArgumentException;
 
@@ -29,9 +29,9 @@ class Attributes extends ArrayCollection
     /**
      * @param  Attribute[]  $elements
      */
-    public function __construct(private array $elements = [])
+    public function __construct(array $elements = [])
     {
-        foreach ($this->elements as $element) {
+        foreach ($elements as $element) {
             if (!($element instanceof Attribute)) {
                 throw new InvalidArgumentException("Element must be an instance of Row");
             }
@@ -45,15 +45,15 @@ class Attributes extends ArrayCollection
             throw new InvalidArgumentException("Element must be an instance of Cell");
         }
 
-        $this->elements[] = $element;
+        parent::add($element);
     }
 
-    /**
+    /**Переопределен ради phpdoc
      * @return Attribute[]
      */
     public function toArray(): array
     {
-        return $this->elements;
+        return parent::toArray();
     }
 
     public function toMap(): array
@@ -85,6 +85,21 @@ class Attributes extends ArrayCollection
             }
         }
         return new Attributes($attributes);
+    }
+
+
+    public function remove(string|int $key): ?Attribute
+    {
+        $removed = null;
+        foreach ($this->toArray() as $index => $element) {
+            if ($element->key === $key) {
+                $removed = $element;
+//                unset($this->elements[$index]);
+                parent::remove($index);
+                break;
+            }
+        }
+        return $removed;
     }
 
     public static function mergeAttributes(

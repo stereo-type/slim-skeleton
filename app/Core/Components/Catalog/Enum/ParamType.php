@@ -9,22 +9,29 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Enum;
 
+use App\Core\Container;
+use App\Core\Services\Purifier;
 use InvalidArgumentException;
-use Stevebauman\Purify\Facades\Purify;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 enum ParamType: string
 {
 
-    case paramInt = 'int';
+    case PARAM_INT = 'int';
 
-    case paramText = 'text';
+    case PARAM_TEXT = 'text';
 
-    case paramRaw = 'raw';
+    case PARAM_RAW = 'raw';
 
-    case paramBool = 'bool';
+    case PARAM_BOOL = 'bool';
 
-    case paramFloat = 'float';
+    case PARAM_FLOAT = 'float';
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function clean($data): mixed
     {
         if (is_object($data)) {
@@ -33,13 +40,15 @@ enum ParamType: string
         if (is_array($data)) {
             throw new InvalidArgumentException('data can\'t be array');
         }
-        $cleaned = Purify::clean((string)$data);
+
+        $purifier = Container::get_container()->get(Purifier::class);
+        $cleaned = $purifier->purify($data);
         return match ($this) {
-            self::paramRaw => $cleaned,
-            self::paramInt => (int)$cleaned,
-            self::paramText => strip_tags($cleaned),
-            self::paramBool => (bool)$cleaned,
-            self::paramFloat => (float)$cleaned,
+            self::PARAM_RAW => $cleaned,
+            self::PARAM_INT => (int)$cleaned,
+            self::PARAM_TEXT => strip_tags($cleaned),
+            self::PARAM_BOOL => (bool)$cleaned,
+            self::PARAM_FLOAT => (float)$cleaned,
         };
     }
 

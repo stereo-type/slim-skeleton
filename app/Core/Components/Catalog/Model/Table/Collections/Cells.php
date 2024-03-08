@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Table\Collections;
+namespace App\Core\Components\Catalog\Model\Table\Collections;
 
-use App\Core\Components\Catalog\Dto\Table\Cell;
+use App\Core\Components\Catalog\Model\Table\Cell;
 use Doctrine\Common\Collections\ArrayCollection;
 use InvalidArgumentException;
 

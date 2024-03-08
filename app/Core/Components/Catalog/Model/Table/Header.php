@@ -7,31 +7,25 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Table;
+namespace App\Core\Components\Catalog\Model\Table;
 
-use App\Core\Components\Catalog\Dto\Table\Collections\Attributes;
-use App\Core\Components\Catalog\Dto\Table\Collections\Rows;
+use App\Core\Components\Catalog\Model\Table\Collections\Attributes;
+use App\Core\Components\Catalog\Model\Table\Collections\Rows;
 
 readonly class Header
 {
     public Rows $rows;
-    public Attributes $attributes;
 
     public function __construct(
         $rows = new Rows(),
-        $attributes = new Attributes(),
+        public Attributes $attributes = new Attributes(),
     ) {
         foreach ($rows->toArray() as $r) {
             foreach ($r->cells->toArray() as $c) {
+                $c->attributes->add(new Attribute('scope', 'col'));
                 $c->params->setHeader(true);
             }
         }
-
-        $this->attributes = Attributes::mergeAttributes(
-            Attributes::MERGE_JOIN,
-            $attributes,
-            Attributes::fromArray(['scope' => 'col']),
-        );
         $this->rows = $rows;
     }
 

@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Core\Services;
 
-class HashService
+readonly class HashService
 {
     public function hashPassword(string $password): string
     {

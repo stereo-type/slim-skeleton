@@ -17,9 +17,6 @@ use Slim\Routing\RouteCollectorProxy;
 return static function (App $app) {
     $env = $app->getContainer()?->get(Config::class)->get('app_environment')?? '';
     if (AppEnvironment::isDevelopment($env)) {
-        $app->group('/demo_categories', function (RouteCollectorProxy $categories) {
-            $categories->get('', [DemoCatalogController::class, 'index'])->setName('categories');
-            $categories->post('/filter', [DemoCatalogController::class, 'filter']);
-        })->add(AuthMiddleware::class);
+        DemoCatalogController::routing($app, '/demo_categories');
     }
 };

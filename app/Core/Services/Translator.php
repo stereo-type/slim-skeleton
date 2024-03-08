@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace App\Core\Services;
 
-class Translator
+readonly class Translator
 {
     private string $language;
     private array $translations;

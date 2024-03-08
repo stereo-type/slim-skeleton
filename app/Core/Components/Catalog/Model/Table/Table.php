@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Table;
+namespace App\Core\Components\Catalog\Model\Table;
 
-use App\Core\Components\Catalog\Dto\Table\Collections\Attributes;
-use App\Core\Components\Catalog\Dto\Table\Collections\Rows;
+use App\Core\Components\Catalog\Model\Table\Collections\Attributes;
+use App\Core\Components\Catalog\Model\Table\Collections\Rows;
 
 readonly class Table
 {
@@ -25,7 +25,7 @@ readonly class Table
         $this->attributes = Attributes::mergeAttributes(
             Attributes::MERGE_JOIN,
             Attributes::fromArray($attributes),
-            Attributes::fromArray(['class' => 'table table-hover table-striped table-sm']),
+            Attributes::fromArray(['class' => 'table table-hover table-striped']),
         );
     }
 
@@ -57,7 +57,8 @@ readonly class Table
     {
         $html = "<table $this->attributes>";
         if (!$this->header->rows->isEmpty()) {
-            $html .= '<thead>';
+            $head_attributes = (string)$this->header->attributes;
+            $html .= "<thead $head_attributes>";
             foreach ($this->header->rows->toArray() as $row) {
                 $html .= $row->render();
             }
@@ -75,7 +76,7 @@ readonly class Table
     public function toMap(): array
     {
         return [
-            'struct' => [
+            'structure' => [
                 'attributes' => $this->attributes->toMap(),
                 'header'     => $this->header->toMap(),
                 'body'       => $this->body->toMap(),

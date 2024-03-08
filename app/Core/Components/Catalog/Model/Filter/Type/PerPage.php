@@ -7,20 +7,19 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Filter\Type;
+namespace App\Core\Components\Catalog\Model\Filter\Type;
 
-use App\Core\Components\Catalog\Dto\Table\Collections\Attributes;
+use App\Core\Components\Catalog\Model\Table\Collections\Attributes;
 use App\Core\Components\Catalog\Enum\ParamType;
 
-readonly class PerPage extends Select
+ class PerPage extends Select
 {
 
     public static function build(): self
     {
         return new self(
             'perpage',
-            ParamType::paramInt,
-            [],
+            Attributes::fromArray(['style' => 'grid-column: 11;']),
             10,
             [
                 'options' => [

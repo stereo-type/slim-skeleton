@@ -7,24 +7,10 @@
 
 declare(strict_types=1);
 
-
-use App\Core\Components\Catalog\Demo\DemoFilter;
-use Psr\Container\ContainerInterface;
-use Slim\Views\Twig;
-
-use App\Core\ResponseFormatter;
 use App\Core\Components\Catalog\Demo\DemoCatalogController;
 use App\Core\Components\Catalog\Demo\DemoDataProvider;
+use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 
 return [
-    DemoCatalogController::class => static function (ContainerInterface $container) {
-        $dataProvider = new DemoDataProvider();
-        $filterForm = new DemoFilter();
-        return new DemoCatalogController(
-            $container->get(Twig::class),
-            $container->get(ResponseFormatter::class),
-            $dataProvider,
-            $filterForm,
-        );
-    }
+    ...DemoCatalogController::binding(DemoDataProvider::class),
 ];

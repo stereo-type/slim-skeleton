@@ -10,11 +10,10 @@ declare(strict_types=1);
 namespace App\Core\Components\Catalog\Providers;
 
 
-use App\Core\Components\Catalog\Dto\Filter\Filters;
+use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
 
 interface CatalogFilterInterface
 {
-
-    public function filters(array $formData): Filters;
+    public function filters(array $filterData): Filters;
 
 }

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Table;
+namespace App\Core\Components\Catalog\Model\Table;
 
 readonly class Attribute
 {

@@ -1,21 +1,14 @@
 import '../css/catalog_filter.css';
+
+import {cleanForm, showLoader, dismissLoader, escapeHtml} from "../../../../_assets/js/utils";
 import {post} from "../../../../_assets/js/ajax";
 import {modal} from "../../../../_assets/js/modal";
+import config from "../../../../_assets/js/config";
 
-function showLoader() {
-    const loader = document.getElementById('--catalog-loader');
-    loader.classList.remove('d-none');
-    loader.classList.add('d-block');
-}
-
-function dismissLoader() {
-    const loader = document.getElementById('--catalog-loader');
-    loader.classList.remove('d-block');
-    loader.classList.add('d-none');
-}
 
 function sendFilterRequest(formElement) {
     const formData = new FormData(formElement);
+    cleanForm(formData, formElement);
     const action = formElement.getAttribute('action');
     if (!action) {
         throw new Error('unspecified action');
@@ -27,12 +20,26 @@ function sendFilterRequest(formElement) {
             if (response.ok) {
                 const parentContainer = formElement.closest('.--live-catalog-container');
                 const resultContainer = parentContainer.querySelector('.--live-catalog-table-wrap');
+                const paginbar = parentContainer.querySelector('.--live-catalog-paginbar');
                 response.json().then(data => {
-                    resultContainer.innerHTML = data.table;
-                });
+                    resultContainer.innerHTML = data['table'];
+                    if (data['filter_changed']) {
+                        paginbar.innerHTML = data['paginbar'];
+                    }
+                }).catch(error => {
+                        modal(escapeHtml(error.message)).then(() => {
+                            if (config.DEBUG) {
+                                console.error(error.message);
+                            }
+                        });
+                    }
+                );
             }
-        } catch (_) {
-            modal(_.message).then(() => {
+        } catch (error) {
+            modal(error.message).then(() => {
+                if (config.DEBUG) {
+                    console.error(error.message);
+                }
             });
         }
     });

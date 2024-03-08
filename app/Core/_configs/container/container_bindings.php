@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Core\_configs\builder\twig\Builder;
-use App\Core\Services\Translator;
+
 use Clockwork\Clockwork;
 use Clockwork\DataSource\DoctrineDataSource;
 use Clockwork\Storage\FileStorage;
@@ -66,6 +65,9 @@ use App\Core\RouteEntityBindingStrategy;
 use App\Core\Services\EntityManagerService;
 use App\Core\Services\UserProviderService;
 use App\Core\Session;
+use App\Core\_configs\builder\twig\Builder;
+use App\Core\Services\Purifier;
+use App\Core\Services\Translator;
 
 use function DI\create;
 
@@ -84,7 +86,7 @@ $middleware_file = file_exists(CONFIG_PATH.'/middleware.php')
 
 require_once __DIR__.'/../utils.php';
 
-$catalogComponentBindings = include APP_PATH.'/Core/Components/Catalog/_configs/container_bindings.php';
+$catalogComponentBindings = require APP_PATH.'/Core/Components/Catalog/_configs/container_bindings.php';
 
 $coreBindings = [
     App::class                              =>
@@ -226,7 +228,8 @@ $coreBindings = [
         $registry = new FormRegistry($extensions, $resolvedTypeFactory);
         return new FormFactory($registry);
     },
-    Translator::class                       => static fn(Config $config) => new Translator($config->get('lang'))
+    Translator::class                       => static fn(Config $config) => new Translator($config->get('lang')),
+    Purifier::class                         => static fn() => Purifier::build(),
 ];
 
 return $coreBindings + $catalogComponentBindings;

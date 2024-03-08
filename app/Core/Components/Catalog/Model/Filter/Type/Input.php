@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Filter\Type;
+namespace App\Core\Components\Catalog\Model\Filter\Type;
 
-readonly class Input extends Filter
+class Input extends Filter
 {
 
     private function _type(): string
@@ -20,6 +20,6 @@ readonly class Input extends Filter
     public function render(): string
     {
         $type = $this->_type();
-        return "<input type=\"$type\" name=\"$this->name\" $this->attributes>";
+        return "<input type=\"$type\" name=\"$this->name\" $this->attributes value=\"" . $this->get_value() . "\">";
     }
 }

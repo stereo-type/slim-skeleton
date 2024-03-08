@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Components\Catalog\Dto\Table;
+namespace App\Core\Components\Catalog\Model\Table;
 
-use App\Core\Components\Catalog\Dto\Table\Collections\Attributes;
+use App\Core\Components\Catalog\Model\Table\Collections\Attributes;
 
 readonly class Cell
 {

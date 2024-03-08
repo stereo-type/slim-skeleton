@@ -9,18 +9,36 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Demo;
 
-use App\Core\Components\Catalog\Dto\Table\Attribute;
-use App\Core\Components\Catalog\Dto\Table\Body;
-use App\Core\Components\Catalog\Dto\Table\Cell;
-use App\Core\Components\Catalog\Dto\Table\Collections\Attributes;
-use App\Core\Components\Catalog\Dto\Table\Collections\Cells;
-use App\Core\Components\Catalog\Dto\Table\Collections\Rows;
-use App\Core\Components\Catalog\Dto\Table\Row;
-use App\Core\Components\Catalog\Dto\Table\Table;
-use App\Core\Components\Catalog\Providers\CatalogDataProviderInterface;
+use App\Core\Components\Catalog\Enum\FilterType;
+use App\Core\Components\Catalog\Enum\ParamType;
+use App\Core\Components\Catalog\Model\Filter\Collections\FilterComparisons;
+use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
+use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
+use App\Core\Components\Catalog\Model\Filter\Type\Filter;
+use App\Core\Components\Catalog\Model\Table\Attribute;
+use App\Core\Components\Catalog\Model\Table\Body;
+use App\Core\Components\Catalog\Model\Table\Cell;
+use App\Core\Components\Catalog\Model\Table\Collections\Attributes;
+use App\Core\Components\Catalog\Model\Table\Collections\Cells;
+use App\Core\Components\Catalog\Model\Table\Collections\Rows;
+use App\Core\Components\Catalog\Model\Table\Row;
+use App\Core\Components\Catalog\Model\Table\Table;
+use App\Core\Components\Catalog\Providers\AbstractDataProvider;
+use App\Core\Entity\User;
+use DateTime;
+use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\QueryBuilder;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
-class DemoDataProvider implements CatalogDataProviderInterface
+class DemoDataProvider extends AbstractDataProvider
 {
+    public function __construct(EntityManager $entityManager)
+    {
+        parent::__construct($entityManager, new TableQueryParams(orderBy: 'u.id'));
+    }
 
 
     /**Пример построения таблицы используя разные подходы:
@@ -66,37 +84,91 @@ class DemoDataProvider implements CatalogDataProviderInterface
     }
 
 
-    private function data(int $count = 0): array
+    private function def_rows(): array
     {
-        $head = ['№', 'Название', 'Управление'];
-        $rows = [
-            Row::build(['3', 'Тест4', 'хчч'], ['width' => 'color:100', 'class'=>'table-info']),
-            Row::build(['1', 'Тест', 'х'], ['style' => 'background-color: red','class'=>'table-danger' ]),
+        return [
+            ['1221', 'Тест11', '3aaх'],
+            ['1221', 'Тест11', '3aaх'],
+            ['1221', 'Тест11', '3aaх'],
+            Row::build(['3', 'Тест4', 'хчч'], ['width' => 'color:100', 'class' => 'table-info']),
+            Row::build(['1', 'Тест', 'х'], ['style' => 'background-color: red', 'class' => 'table-danger']),
             Row::build(['1221', 'Тест11', '3aaх'], ['style' => 'color:blue']),
             Row::build(['1', 'Тест', 'х'], ['style' => 'background-color: red']),
             Row::build(['1221', 'Тест11', '3aaх'], ['style' => 'color:blue']),
             Row::build(['1', 'Тест', 'х'], ['style' => 'background-color: red']),
             Row::build(['1221', 'Тест11', '3aaх'], ['style' => 'color:blue']),
-            ['1221', 'Тест11', '3aaх'],
-            ['1221', 'Тест11', '3aaх'],
-            ['1221', 'Тест11', '3aaх'],
             ['1221', 'Тест11', '3aaх'],
             ['1221', 'Тест11', '3aaх'],
             ['1221', 'Тест11', '3aaх'],
         ];
-
-        return ['head' => $head, 'rows' => $count > 0 && $count< count($rows) ? array_slice($rows,0, $count): $rows];
     }
 
-    public function filter_data(array $filter): Table
+
+    public function head(): array
     {
-        ['head' => $head, 'rows' => $rows] = $this->data(3);
-        return Table::build($rows, $head);
+        return ['№', 'Имя', 'Email', 'Подтвержден'];
     }
 
-    public function get_table(): Table
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function filters(array $filterData): Filters
     {
-        ['head' => $head, 'rows' => $rows] = $this->data();
-        return Table::build($rows, $head);
+        $filters = [];
+        $filters[] = Filter::create(FilterType::input, 'id', ['placeholder' => 'ID'], paramType: ParamType::PARAM_INT);
+        $filters[] = Filter::create(FilterType::input, 'name');
+        $filters[] = Filter::create(FilterType::input, 'description', length: 4);
+        $filters[] = Filter::create(FilterType::input, 'description4', length: 4);
+        $filters[] = Filter::create(FilterType::space, 'space1', length: 4);
+        $filters[] = Filter::create(FilterType::input, 'description6', length: 3);
+        $filters[] = Filter::create(
+            FilterType::select,
+            'desction7',
+            params: ['options' => ['12', '3', '23']],
+            length: 3
+        );
+        $filters[] = Filter::create(
+            FilterType::perpage,
+            'perpage',
+            Attributes::fromArray(['style' => 'grid-column: 11;']),
+            defaultValue: 2,
+            params: ['options' => ['2' => '2', '4' => '4', '8' => '8']],
+            length: 2
+        );
+        return new Filters($filters);
+    }
+
+    /**
+     * @param TableQueryParams $params
+     * @return QueryBuilder
+     * @throws QueryException
+     */
+    public function get_query(TableQueryParams $params): QueryBuilder
+    {
+        $alies = 'u';
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select("$alies.id", "$alies.name", "$alies.email", "$alies.verifiedAt")
+            ->from(User::class, $alies);
+
+        $allowed = FilterComparisons::fromArray(
+            ['id' => Comparison::EQ, 'name' => Comparison::CONTAINS]
+        );
+        return $params->filters->fill_query_builder($qb, $alies, $allowed);
+    }
+
+    public function transform_data_row(array $item): array
+    {
+        $verified = $item['verifiedAt'] instanceof DateTime;
+        return [
+            $item['id'],
+            $item['name'],
+            $item['email'],
+            new Cell(
+                $verified ? '<i class="bi bi-check" style="font-size: xx-large;"></i>'
+                    : '<i class="bi bi-x" style="font-size: xx-large;"></i>',
+                Attributes::fromArray(['style' => $verified ? 'color: lightgreen;' : 'color: red;'])
+            )
+        ];
     }
 }
