@@ -9,6 +9,17 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Demo;
 
+use DateTime;
+
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+
+use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\QueryBuilder;
+
+use App\Core\Entity\User;
 use App\Core\Components\Catalog\Enum\FilterType;
 use App\Core\Components\Catalog\Enum\ParamType;
 use App\Core\Components\Catalog\Model\Filter\Collections\FilterComparisons;
@@ -24,14 +35,6 @@ use App\Core\Components\Catalog\Model\Table\Collections\Rows;
 use App\Core\Components\Catalog\Model\Table\Row;
 use App\Core\Components\Catalog\Model\Table\Table;
 use App\Core\Components\Catalog\Providers\AbstractDataProvider;
-use App\Core\Entity\User;
-use DateTime;
-use Doctrine\Common\Collections\Expr\Comparison;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\QueryBuilder;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 
 class DemoDataProvider extends AbstractDataProvider
 {
@@ -48,7 +51,7 @@ class DemoDataProvider extends AbstractDataProvider
      * 3) Смешанный вариант
      * @return string
      */
-    public function render(): string
+    public function testCase(): string
     {
         $rows = [
             new Row(
@@ -106,7 +109,7 @@ class DemoDataProvider extends AbstractDataProvider
 
     public function head(): array
     {
-        return ['№', 'Имя', 'Email', 'Подтвержден'];
+        return ['№', 'Имя', 'Email', 'Подтвержден', 'Управление'];
     }
 
     /**
@@ -117,24 +120,35 @@ class DemoDataProvider extends AbstractDataProvider
     {
         $filters = [];
         $filters[] = Filter::create(FilterType::input, 'id', ['placeholder' => 'ID'], paramType: ParamType::PARAM_INT);
-        $filters[] = Filter::create(FilterType::input, 'name');
-        $filters[] = Filter::create(FilterType::input, 'description', length: 4);
-        $filters[] = Filter::create(FilterType::input, 'description4', length: 4);
-        $filters[] = Filter::create(FilterType::space, 'space1', length: 4);
+        $filters[] = Filter::create(FilterType::input, 'name', ['placeholder' => 'Имя']);
+        $filters[] = Filter::create(
+            FilterType::input,
+            'description',
+            ['placeholder' => 'Тест разметки, не участвует в фильтрации'],
+            length: 4
+        );
+        $filters[] = Filter::create(
+            FilterType::input,
+            'description4',
+            ['placeholder' => 'Тест разметки, не участвует в фильтрации'],
+            length: 4
+        );
+        $filters[] = Filter::create(FilterType::space, 'space1', length: 1);
+        $filters[] = Filter::create(FilterType::space, 'space2', defaultValue: '<div class="alert alert-info m-0 py-1 h-100"> Это спейсер с контентом</div>', length: 3);
         $filters[] = Filter::create(FilterType::input, 'description6', length: 3);
         $filters[] = Filter::create(
             FilterType::select,
             'desction7',
             params: ['options' => ['12', '3', '23']],
-            length: 3
+            length: 2
         );
         $filters[] = Filter::create(
             FilterType::perpage,
             'perpage',
-            Attributes::fromArray(['style' => 'grid-column: 11;']),
+            Attributes::fromArray(['style' => 'grid-column: 10 span 1;']),
             defaultValue: 2,
             params: ['options' => ['2' => '2', '4' => '4', '8' => '8']],
-            length: 2
+            length: 1
         );
         return new Filters($filters);
     }
@@ -168,7 +182,8 @@ class DemoDataProvider extends AbstractDataProvider
                 $verified ? '<i class="bi bi-check" style="font-size: xx-large;"></i>'
                     : '<i class="bi bi-x" style="font-size: xx-large;"></i>',
                 Attributes::fromArray(['style' => $verified ? 'color: lightgreen;' : 'color: red;'])
-            )
+            ),
+            ''
         ];
     }
 }

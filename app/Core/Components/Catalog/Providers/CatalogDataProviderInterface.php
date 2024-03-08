@@ -14,10 +14,13 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 use App\Core\Components\Catalog\Model\Filter\TableData;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Model\Table\Table;
+use App\Core\Components\Catalog\Model\Table\Collections\Rows;
 
 interface CatalogDataProviderInterface
 {
     /**Методы которые необзодимо определить*/
+
+    /**Шапка таблицы, может быть в виде коллекци {@link Rows}, что позволит стилизоват ее целиком */
     public function head(): iterable;
 
     public function get_query(TableQueryParams $params): QueryBuilder;
