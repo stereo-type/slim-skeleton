@@ -10,7 +10,7 @@ use stdClass;
 class PagingBar
 {
 
-    protected const PAGINBAR_TEMPLATE = 'catalog/paginbar.twig';
+    public const PAGINBAR_TEMPLATE = 'catalog/paginbar.twig';
     /**
      * @var int The maximum number of pagelinks to display.
      */
@@ -92,7 +92,7 @@ class PagingBar
         if ($this->page > 0) {
             $data->previous = [
                 'page' => $this->page,
-                'url' => $this->baseurl->withQuery(Query::build([$this->pagevar => $this->page - 1]))
+                'url' => $this->baseurl->withQuery(Query::build([$this->pagevar => $this->page]))
 
             ];
         }
@@ -117,7 +117,7 @@ class PagingBar
             $displaypage = $currpage + 1;
 
             $iscurrent = $this->page == $currpage;
-            $link = $this->baseurl->withQuery(Query::build([$this->pagevar => $currpage]));
+            $link = $this->baseurl->withQuery(Query::build([$this->pagevar => $currpage + 1]));
 
             $data->pages[] = [
                 'page' => $displaypage,
@@ -129,17 +129,10 @@ class PagingBar
             $currpage++;
         }
 
-        if ($currpage < $lastpage) {
-            $data->last = [
-                'page' => $lastpage,
-                'url' => $this->baseurl->withQuery(Query::build([$this->pagevar => $lastpage - 1])),
-            ];
-        }
-
         if ($this->page + 1 != $lastpage) {
             $data->next = [
-                'page' => $this->page + 2,
-                'url' => $this->baseurl->withQuery(Query::build([$this->pagevar => $lastpage + 1])),
+                'page' => $this->page,
+                'url' => $this->baseurl->withQuery(Query::build([$this->pagevar => $this->page + 2 ])),
             ];
         }
 

@@ -11,6 +11,7 @@ namespace App\Core\Components\Catalog\Model\Filter\Collections;
 
 
 use App\Core\Components\Catalog\Model\Filter\Type\Filter;
+use App\Core\Components\Catalog\Model\Filter\Type\Page;
 use App\Core\Components\Catalog\Model\Filter\Type\PerPage;
 use App\Core\Components\Catalog\Model\Filter\Type\Search;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -45,12 +46,16 @@ class Filters extends ArrayCollection
         }
         $has_perpage = false;
         $has_find = false;
+        $has_page = false;
         foreach ($elements as $element) {
             if ($element instanceof PerPage) {
                 $has_perpage = true;
             }
             if ($element instanceof Search) {
                 $has_find = true;
+            }
+            if ($element instanceof Page) {
+                $has_page = true;
             }
         }
         if ($this->perpage && !$has_perpage) {
@@ -59,6 +64,10 @@ class Filters extends ArrayCollection
 
         if ($this->find && !$has_find) {
             $elements[] = Search::build();
+        }
+
+        if (!$has_page) {
+            $elements[] = Page::build();
         }
         parent::__construct($elements);
     }
@@ -97,15 +106,18 @@ class Filters extends ArrayCollection
 
     /**Метод устанавливает в фильтра значения которые пришли из поста с отчисткой этих значений
      * @param array $data
+     * @param bool $force - установка несмотря ни на что
      * @return $this
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function fillData(array $data): self
+    public function fillData(array $data, bool $force = false): self
     {
         foreach ($this->toArray() as $element) {
-            if (!empty($data[$element->name])) {
-                $element->set_param(Filter::FILTER_PARAM_VALUE, $element->paramType->clean($data[$element->name]));
+            if (isset($data[$element->name])) {
+                if (!empty($data[$element->name]) || $force) {
+                    $element->set_param(Filter::FILTER_PARAM_VALUE, $element->paramType->clean($data[$element->name]));
+                }
             }
         }
         return $this;

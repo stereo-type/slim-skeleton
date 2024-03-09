@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Controllers;
 
+use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
+use App\Core\Components\Catalog\Model\Filter\Type\Page;
+use App\Core\Constants\ServerStatus;
 use Exception;
 use InvalidArgumentException;
 
@@ -44,6 +47,8 @@ abstract class CatalogController
     /**Шаблон представления фильтров и таблицы, при необходимости переопределить*/
     public const TABLE_TEMPLATE = 'catalog/index.twig';
     public const CACHE_CATALOG_KEY = '_component_catalog';
+    /**Использовать ли кеширование*/
+    public const USE_CACHE = true;
 
     public function __construct(
         protected readonly CatalogDataProviderInterface & CatalogFilterInterface $dataProvider,
@@ -83,17 +88,23 @@ abstract class CatalogController
      * @throws NotFoundExceptionInterface
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws Exception
      */
     final public function index(Request $request, Response $response): Response
     {
-        /**Cache**/
         /**Post+Get*/
         $data = array_merge((array)($request->getParsedBody() ?? []), $request->getQueryParams());
+        /**ClearCache*/
         if (!empty($data['clearCache']) && (bool)$data['clearCache']) {
             $this->clear_filters_from_cache();
+            return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::REDIRECT);
         }
-        $cache = $this->get_filters_from_cache();
-        $content = $this->_get_content($request->getUri(), array_merge($cache, $data));
+
+        /**Cache**/
+        $cache = static::USE_CACHE ? $this->get_filters_from_cache() : [];
+        $data = array_merge($cache, $data);
+        $filters = $this->dataProvider->filters($data)->fillData($data);
+        $content = $this->_get_content($request->getUri(), $filters, $data);
 
         return $this->twig->render(
             $response,
@@ -102,7 +113,7 @@ abstract class CatalogController
                 'id' => $this->get_catalog_id(),
                 'requestIndexRoute' => $this->get_index_route(),
                 'tableHeading' => $this->get_name(),
-                'filtersCatalog' => $content['filters']->render(),
+                'filtersCatalog' => $filters->render(),
                 'tableContent' => $content['table']->render(),
                 'tablePaginbar' => $content['paginbar']->render($this->twig),
             ],
@@ -115,38 +126,47 @@ abstract class CatalogController
      * @return Response
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     * @throws Exception
      */
     final public function filter(Request $request, Response $response): Response
     {
         /**Post+Get*/
         $data = array_merge((array)($request->getParsedBody() ?? []), $request->getQueryParams());
-        $content = $this->_get_content($request->getUri()->withPath($this->get_index_route()), $data);
-        $filters = $content['filters'];
+        $filters = $this->dataProvider->filters($data)->fillData($data);
 
         $current_filters = $filters->getValues();
-        $cached_filters = $this->get_filters_from_cache();
-        $filter_changed = !empty(array_diff($current_filters, $cached_filters));
+        $cached_filters = static::USE_CACHE ? $this->get_filters_from_cache() : [];
+        $filter_diff = array_diff_assoc($current_filters, $cached_filters);
+        $filter_changed = !empty($filter_diff);
         if ($filter_changed) {
-            $this->save_filters_to_cache($current_filters);
+            /**Если изменена не только страница, а какие то фильтра, то необходимо сбросить страницу на 0*/
+            if (!(count($filter_diff) === 1 && isset($filter_diff['page'])) && !empty($cached_filters)) {
+                $data['page'] = Page::INIT_PAGE;
+                $filters->fillData(['page' => Page::INIT_PAGE], force: true);
+            }
+            if (static::USE_CACHE) {
+                $this->save_filters_to_cache($filters->getValues());
+            }
         }
-
+        $content = $this->_get_content($request->getUri()->withPath($this->get_index_route()), $filters, $data);
 
         $map = $content['table']->toMap();
         $map['filter_changed'] = $filter_changed;
         $map['paginbar'] = $content['paginbar']->render($this->twig);
+        $map['page'] = $content['page'];
+        $map['per_page'] = $content['per_page'];
         return $this->responseFormatter->asJson($response, $map);
     }
 
     /**
      * @param UriInterface $uri
+     * @param Filters $filters
      * @param array $data
      * @return array
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws Exception
      */
-    private function _get_content(UriInterface $uri, array $data): array
+    private function _get_content(UriInterface $uri, Filters $filters, array $data): array
     {
-        $filters = $this->dataProvider->filters($data)->fillData($data);
         $params = TableQueryParams::fromArray(
             array_merge(
                 $this->dataProvider->get_params()->toArray(),
@@ -155,7 +175,7 @@ abstract class CatalogController
                 $filters->getValues()
             )
         );
-        $tableData = $this->dataProvider->get_table_data($params);
+        $tableData = $this->dataProvider->get_table_data($params->copyWith(page: $params->page - 1));
 
         $paginbar = new PagingBar(
             $tableData->totalRecords,
@@ -166,8 +186,9 @@ abstract class CatalogController
 
         return [
             'table' => $this->dataProvider->get_table($tableData->records, $params),
-            'filters' => $filters,
-            'paginbar' => $paginbar
+            'paginbar' => $paginbar,
+            'page' => $tableData->currentPage + 1,
+            'per_page' => $tableData->perPage,
         ];
     }
 

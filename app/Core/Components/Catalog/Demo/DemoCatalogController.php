@@ -25,6 +25,7 @@ use App\Core\Components\Catalog\Controllers\CatalogController;
  **/
 class DemoCatalogController extends CatalogController
 {
+    public const USE_CACHE = true;
 
     public function get_name(): string
     {

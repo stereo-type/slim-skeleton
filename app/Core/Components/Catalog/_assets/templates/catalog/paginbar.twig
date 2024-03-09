@@ -3,9 +3,7 @@
         <ul class="pagination mt-3">
             {% if previous %}
                 <li class="page-item prev">
-                    <a href="{{ previous.url }}" class="page-link">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
+                    <a href="{{ previous.url }}" class="page-link">&laquo;</a>
                 </li>
             {% endif %}
             {% if first %}
@@ -33,9 +31,7 @@
             {% endif %}
             {% if next %}
                 <li class="page-item next">
-                    <a href="{{ next.url }}" class="page-link">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
+                    <a href="{{ next.url }}" class="page-link">&raquo;</a>
                 </li>
             {% endif %}
         </ul>

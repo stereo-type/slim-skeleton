@@ -25,7 +25,7 @@ class TableQueryParams
      */
     public function __construct(
         public Filters $filters = new Filters(),
-        readonly public int $page = 0,
+        readonly public int $page = 1,
         readonly public int $perpage = 10,
         readonly public string $orderBy = 'id',
         readonly public OrderDir $orderDir = OrderDir::asc,
@@ -36,7 +36,7 @@ class TableQueryParams
     {
         return new self(
             $data['filters'] ?? new Filters(),
-            (int)($data['page'] ?? 0),
+            (int)($data['page'] ?? 1),
             (int)($data['perpage'] ?? 10),
             $data['orderBy'] ?? 'id',
             $data['orderDir'] instanceof OrderDir ? $data['orderDir']
@@ -58,6 +58,22 @@ class TableQueryParams
     public function addFilter(Filter $filter): void
     {
         $this->filters->add($filter);
+    }
+
+    public function copyWith(
+        ?Filters $filters = null,
+        ?int $page = null,
+        ?int $perpage = null,
+        ?string $orderBy = null,
+        ?OrderDir $orderDir = null,
+    ): self {
+        return new self(
+            $filters ?? $this->filters,
+            $page ?? $this->page,
+            $perpage ?? $this->perpage,
+            $orderBy ?? $this->orderBy,
+            $orderDir ?? $this->orderDir,
+        );
     }
 
 

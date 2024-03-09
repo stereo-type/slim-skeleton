@@ -145,7 +145,7 @@ class DemoDataProvider extends AbstractDataProvider
         $filters[] = Filter::create(
             FilterType::perpage,
             'perpage',
-            Attributes::fromArray(['style' => 'grid-column: 10 span 1;']),
+            Attributes::fromArray(['style' => 'grid-column: 11;']),
             defaultValue: 2,
             params: ['options' => ['2' => '2', '4' => '4', '8' => '8']],
             length: 1
