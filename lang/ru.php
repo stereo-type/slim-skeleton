@@ -25,7 +25,8 @@ return [
     'update'       => 'Обновить',
     'search'       => 'Поиск',
     'save_changes' => 'Сохранить изменения',
-    'code' => 'Код',
+    'code'         => 'Код',
+    'clear'        => 'Очистить',
 
     'login:forgot_pass'             => 'Забыли пароль?',
     'login:do_you_have_account'     => "У вас есть аккаунт?",

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace App\Core\Components\Catalog\Model\Filter\Collections;
 
 
+use App\Core\Components\Catalog\Model\Filter\Type\Clear;
 use App\Core\Components\Catalog\Model\Filter\Type\Filter;
 use App\Core\Components\Catalog\Model\Filter\Type\Page;
 use App\Core\Components\Catalog\Model\Filter\Type\PerPage;
@@ -37,16 +38,15 @@ class Filters extends ArrayCollection
     public function __construct(
         array $elements = [],
         private readonly bool $perpage = true,
-        private readonly bool $find = true
+        private readonly bool $find = true,
+        private readonly bool $clear = true,
     ) {
         foreach ($elements as $element) {
             if (!($element instanceof Filter)) {
                 throw new InvalidArgumentException("Element must be an instance of Filter");
             }
         }
-        $has_perpage = false;
-        $has_find = false;
-        $has_page = false;
+        $has_perpage = $has_find = $has_page = $has_clear = false;
         foreach ($elements as $element) {
             if ($element instanceof PerPage) {
                 $has_perpage = true;
@@ -57,9 +57,16 @@ class Filters extends ArrayCollection
             if ($element instanceof Page) {
                 $has_page = true;
             }
+            if ($element instanceof Clear) {
+                $has_clear = true;
+            }
         }
         if ($this->perpage && !$has_perpage) {
             $elements[] = PerPage::build();
+        }
+
+        if ($this->clear && !$has_clear) {
+            $elements[] = Clear::build();
         }
 
         if ($this->find && !$has_find) {

@@ -19,7 +19,7 @@ use App\Core\Components\Catalog\Enum\ParamType;
     {
         return new self(
             'perpage',
-            Attributes::fromArray(['style' => 'grid-column: 11;']),
+            Attributes::fromArray(['style' => 'grid-column: 10;']),
             10,
             [
                 'options' => [

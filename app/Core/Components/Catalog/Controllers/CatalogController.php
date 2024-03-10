@@ -175,7 +175,7 @@ abstract class CatalogController
                 $filters->getValues()
             )
         );
-        $tableData = $this->dataProvider->get_table_data($params->copyWith(page: $params->page - 1));
+        $tableData = $this->dataProvider->get_table_data($this->twig, $params->copyWith(page: $params->page - 1));
 
         $paginbar = new PagingBar(
             $tableData->totalRecords,

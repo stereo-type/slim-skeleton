@@ -14,7 +14,7 @@ function dismissLoader() {
 
 function cleanForm(formData, formElement) {
     formData.forEach((element, key, form) => {
-        const clean = DOMPurify.sanitize(element);
+        const clean = DOMPurify.sanitize(element.trim());
         if (clean !== element) {
             const filterElement = formElement.querySelector(`[name=${key}]`);
             if (filterElement) {

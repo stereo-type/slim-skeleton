@@ -9,8 +9,10 @@ declare(strict_types=1);
 
 use App\Core\Components\Catalog\Demo\DemoCatalogController;
 use App\Core\Components\Catalog\Demo\DemoDataProvider;
-use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
+use App\Core\Components\Catalog\Demo\DemoUserCatalogController;
+use App\Core\Components\Catalog\Demo\DemoUserDataProvider;
 
 return [
     ...DemoCatalogController::binding(DemoDataProvider::class),
+    ...DemoUserCatalogController::binding(DemoUserDataProvider::class),
 ];

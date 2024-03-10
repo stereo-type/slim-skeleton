@@ -42,7 +42,7 @@ enum ParamType: string
         }
 
         $purifier = Container::get_container()->get(Purifier::class);
-        $cleaned = $purifier->purify($data);
+        $cleaned = $purifier->purify(trim((string)$data));
         return match ($this) {
             self::PARAM_RAW => $cleaned,
             self::PARAM_INT => (int)$cleaned,

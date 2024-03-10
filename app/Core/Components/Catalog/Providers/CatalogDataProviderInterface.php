@@ -15,6 +15,7 @@ use App\Core\Components\Catalog\Model\Filter\TableData;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Model\Table\Table;
 use App\Core\Components\Catalog\Model\Table\Collections\Rows;
+use Slim\Views\Twig;
 
 interface CatalogDataProviderInterface
 {
@@ -25,11 +26,11 @@ interface CatalogDataProviderInterface
 
     public function get_query(TableQueryParams $params): QueryBuilder;
 
-    public function transform_data_row(array $item): array;
+    public function transform_data_row(Twig $twig, array $item): array;
 
     public function get_table(array $records, TableQueryParams $params): Table;
 
-    public function get_table_data(TableQueryParams $params): TableData;
+    public function get_table_data(Twig $twig, TableQueryParams $params): TableData;
 
     public function get_paginator(TableQueryParams $params): Paginator;
 

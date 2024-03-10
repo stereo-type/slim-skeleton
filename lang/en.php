@@ -26,6 +26,7 @@ return [
     'search'       => 'Search',
     'save_changes' => 'Save Changes',
     'code'         => 'Code',
+    'clear'        => 'Clear',
 
     'login:forgot_pass'             => 'Forgot password?',
     'login:do_you_have_account'     => "Don't have an account?",

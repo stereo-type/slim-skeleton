@@ -15,7 +15,7 @@ use App\Core\Components\Catalog\Model\Table\Collections\Attributes;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class Search extends Filter
+class Clear extends Filter
 {
 
     public const IGNORE_IN_FILTER_REQUEST = true;
@@ -35,9 +35,9 @@ class Search extends Filter
         $translator = Container::get_container()->get(Translator::class);
 
         return new self(
-            'submit',
-            Attributes::fromArray(['class' => 'btn text-primary-emphasis bg-primary-subtle border-primary-subtle p-1', 'style' => 'min-width: 50px; grid-column: 12;']),
-            $translator->translate('search')
+            'clear',
+            Attributes::fromArray(['class' => 'btn text-light-emphasis bg-light-subtle border-light-subtle p-1', 'style' => 'min-width: 60px; grid-column: 11;']),
+            $translator->translate('clear')
         );
     }
 

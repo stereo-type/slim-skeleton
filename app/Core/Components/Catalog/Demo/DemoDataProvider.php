@@ -35,6 +35,7 @@ use App\Core\Components\Catalog\Model\Table\Collections\Rows;
 use App\Core\Components\Catalog\Model\Table\Row;
 use App\Core\Components\Catalog\Model\Table\Table;
 use App\Core\Components\Catalog\Providers\AbstractDataProvider;
+use Slim\Views\Twig;
 
 class DemoDataProvider extends AbstractDataProvider
 {
@@ -134,8 +135,13 @@ class DemoDataProvider extends AbstractDataProvider
             length: 4
         );
         $filters[] = Filter::create(FilterType::space, 'space1', length: 1);
-        $filters[] = Filter::create(FilterType::space, 'space2', defaultValue: '<div class="alert alert-info m-0 py-1 h-100"> Это спейсер с контентом</div>', length: 3);
-        $filters[] = Filter::create(FilterType::input, 'description6', length: 3);
+        $filters[] = Filter::create(
+            FilterType::space,
+            'space2',
+            defaultValue: '<div class="alert alert-info m-0 py-1 h-100"> Это спейсер </div>',
+            length: 3
+        );
+        $filters[] = Filter::create(FilterType::input, 'description6', length: 2);
         $filters[] = Filter::create(
             FilterType::select,
             'desction7',
@@ -145,7 +151,7 @@ class DemoDataProvider extends AbstractDataProvider
         $filters[] = Filter::create(
             FilterType::perpage,
             'perpage',
-            Attributes::fromArray(['style' => 'grid-column: 11;']),
+            Attributes::fromArray(['style' => 'grid-column: 10;']),
             defaultValue: 2,
             params: ['options' => ['2' => '2', '4' => '4', '8' => '8']],
             length: 1
@@ -171,7 +177,7 @@ class DemoDataProvider extends AbstractDataProvider
         return $params->filters->fill_query_builder($qb, $alies, $allowed);
     }
 
-    public function transform_data_row(array $item): array
+    public function transform_data_row(Twig $twig, array $item): array
     {
         $verified = $item['verifiedAt'] instanceof DateTime;
         return [

@@ -5,7 +5,6 @@ import {post} from "../../../../_assets/js/ajax";
 import {modal} from "../../../../_assets/js/modal";
 import config from "../../../../_assets/js/config";
 
-
 function sendFilterRequest(formElement) {
     const formData = new FormData(formElement);
     cleanForm(formData, formElement);

@@ -13,9 +13,13 @@ use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
 use App\Core\Components\Catalog\Model\Filter\TableData;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Model\Table\Table;
+use App\Core\Entity\User;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Exception;
+use ReflectionObject;
+use Slim\Views\Twig;
 
 abstract class AbstractDataProvider implements CatalogDataProviderInterface, CatalogFilterInterface
 {
@@ -57,18 +61,29 @@ abstract class AbstractDataProvider implements CatalogDataProviderInterface, Cat
 
 
     /**
+     * @param Twig $twig
      * @param TableQueryParams $params
      * @return TableData
      * @throws Exception
      */
-    public function get_table_data(TableQueryParams $params): TableData
+    public function get_table_data(Twig $twig, TableQueryParams $params): TableData
     {
         $pagintor = $this->get_paginator($params);
         $pagintor->setUseOutputWalkers(false);
         $count = count($pagintor);
         $rows = array_map(
-            function (array $item) {
-                return $this->transform_data_row($item);
+            function ($item) use ($twig) {
+                /**Может возвращаться Entity*/
+                if (!is_array($item)) {
+                    $reflection = new ReflectionObject($item);
+                    $props = $reflection->getProperties();
+                    $properties = [];
+                    foreach ($props as $prop) {
+                        $properties[$prop->name] = $prop->getValue($item);
+                    }
+                    $item = $properties;
+                }
+                return $this->transform_data_row($twig, $item);
             },
             (array)$pagintor->getIterator()
         );
