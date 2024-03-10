@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Demo;
 
-use App\Core\Components\Catalog\Controllers\CatalogController;
+use App\Core\Components\Catalog\Controllers\EntityCatalogController;
 
 
 /**
@@ -23,9 +23,10 @@ use App\Core\Components\Catalog\Controllers\CatalogController;
  *
  *
  **/
-class DemoUserCatalogController extends CatalogController
+class DemoUserCatalogController extends EntityCatalogController
 {
     public const USE_CACHE = true;
+
 
     public function get_name(): string
     {

@@ -1,156 +1,121 @@
 <?php
-//
-//declare(strict_types=1);
-//
-//namespace App\Core\Components\Catalog\Controllers;
-//
-//use App\Core\Contracts\EntityManagerServiceInterface;
-//use App\Core\Contracts\RequestValidatorFactoryInterface;
-//use App\Core\ResponseFormatter;
-//use InvalidArgumentException;
-//use Psr\Http\Message\ResponseInterface as Response;
-//use Psr\Http\Message\ServerRequestInterface as Request;
-//use Slim\Views\Twig;
-//use Symfony\Component\Form\Extension\Core\Type\TextType;
-//use Symfony\Component\Form\FormFactoryInterface;
-//use Twig\Error\LoaderError;
-//use Twig\Error\RuntimeError;
-//use Twig\Error\SyntaxError;
-//
-//
-//class EntityCatalogController
-//{
-//    public function __construct(
-//        private readonly Twig $twig,
-//        private readonly RequestValidatorFactoryInterface $requestValidatorFactory,
-//        private readonly ResponseFormatter $responseFormatter,
-//        private readonly EntityManagerServiceInterface $entityManagerService,
-//        private readonly FormFactoryInterface $formFactory,
-////        private readonly RequestService $requestService,
-//    )
-//    {
-//    }
-//
-//
-////    function filterData($filters)
-////    {
-////        // Здесь должна быть логика фильтрации данных в соответствии с переданными параметрами
-////        // В этом примере просто возвращается статический набор данных
-////        $data = [
-////            ['id' => 1, 'name' => 'Item 1', 'description' => 'Description 1'],
-////            ['id' => 2, 'name' => 'Item 2', 'description' => 'Description 2'],
-////            ['id' => 3, 'name' => 'Item 3', 'description' => 'Description 3'],
-////            // Добавьте другие данные по мере необходимости
-////        ];
-////
-////        // Пример простой фильтрации данных
-////        $filteredData = array_filter($data, static function ($item) use ($filters) {
-////            $valid = true;
-////            foreach ($filters as $key => $value) {
-////                if (!empty($value) && isset($item[$key]) && $item[$key] !== $value) {
-////                    $valid = false;
-////                    break;
-////                }
-////            }
-////            return $valid;
-////        });
-////
-////        return array_values($filteredData);
-////    }
-//
-//    /**
-//     * @throws SyntaxError
-//     * @throws RuntimeError
-//     * @throws LoaderError
-//     */
-//    public function index(Response $response): Response
-//    {
-//        $t = new DemoTableConstructor();
-//        $tableContent = $t->shortExample();
-//
-//
-//        return $this->twig->render(
-//            $response,
-//            'catalog/index.twig',
-//            [
-//                'tableHeading' => 'Report',
-//                'tableContent' => $tableContent,
-//                'contentType'  => TableContentType::html->value,
-//            ],
-//        );
-//    }
-//
-//    public function filter(Request $request, Response $response): Response
-//    {
-//        $data = $request->getParsedBody();
-//        $contentType = $data['content_type'] ?? TableContentType::html->value;
-//        // Здесь вы должны обработать запрос, фильтровать данные и вернуть результат
-//        // В данном примере предполагается, что вы будете использовать статичные данные
-////        $filteredData = $this->filterData($data); // Функция, которая фильтрует данные
-//        $t = new DemoTableConstructor();
-//
-//        if ($contentType === TableContentType::html->value) {
-//            $filteredData = $t->shortExample(3);
-//            $response->getBody()->write($filteredData);
-//            return $response;
-//        }
-//
-//        if ($contentType === TableContentType::json->value) {
-//            $filteredData = $t->shortExampleArray(3);
-//            return $this->responseFormatter->asJson($response, $filteredData);
-//        }
-//
-//        throw new InvalidArgumentException("Invalid content type $contentType");
-//    }
-//
-//    /**
-//     * @throws SyntaxError
-//     * @throws RuntimeError
-//     * @throws LoaderError
-//     */
-//    public function create(Request $request, Response $response): Response
-//    {
-//        $form = $this->formFactory->createBuilder()->add('name', TextType::class)->getForm();
-//
-////        $form = $this->formFactory->create(RegisterUserForm::class, null, [
-////            'user_provider' => $this->userProviderService
-////        ]);
-////        $form->handleRequest();
-//
-////        $data = $this->requestValidatorFactory->make(CreateCategoryRequestValidator::class)->validate(
-////            $request->getParsedBody()
-////        );
-////
-////        $category = $this->categoryService->create($data['name'], $request->getAttribute('user'));
-////
-////        $this->entityManagerService->sync($category);
-//        return $this->twig->render($response, 'catalog_edit_form.twig', [
-//            'form' => $form->createView(),
-//        ]);
-//    }
-//
-////    public function get(Response $response, Category $category): Response
-////    {
-////        $data = ['id' => $category->getId(), 'name' => $category->getName()];
-////
-////        return $this->responseFormatter->asJson($response, $data);
-////    }
-////
-////    public function delete(Response $response, Category $category): Response
-////    {
-////        $this->entityManagerService->delete($category, true);
-////
-////        return $response;
-////    }
-////
-////    public function update(Request $request, Response $response, Category $category): Response
-////    {
-////        $data = $this->requestValidatorFactory->make(UpdateCategoryRequestValidator::class)->validate(
-////            $request->getParsedBody()
-////        );
-////
-////        $this->entityManagerService->sync($this->categoryService->update($category, $data['name']));
-////
-////        return $response;
-////    }
-//}
+
+declare(strict_types=1);
+
+namespace App\Core\Components\Catalog\Controllers;
+
+use App\Core\Services\RequestConvertor;
+use InvalidArgumentException;
+
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+
+use Psr\Http\Message\ServerRequestInterface as SlimRequest;
+use Slim\Views\Twig;
+use Slim\Routing\RouteCollectorProxy;
+use Symfony\Component\Form\FormFactoryInterface;
+use Doctrine\ORM\EntityManagerInterface;
+
+use App\Core\ResponseFormatter;
+use App\Core\Constants\ServerStatus;
+use App\Core\Contracts\SessionInterface;
+use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
+use App\Core\Components\Catalog\Providers\CatalogDataProviderInterface;
+use App\Core\Components\Catalog\Providers\CatalogFilterInterface;
+use App\Core\Components\Catalog\Providers\CatalogFormInterface;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+
+abstract class EntityCatalogController extends CatalogController
+{
+
+    public const FORM_TEMPLATE = 'catalog/edit_form.twig';
+
+    public function __construct(
+        CatalogDataProviderInterface&CatalogFilterInterface&CatalogFormInterface $dataProvider,
+        Twig $twig,
+        ResponseFormatter $responseFormatter,
+        SessionInterface $session,
+        protected readonly RequestConvertor $requestConvertor
+    ) {
+        parent::__construct($dataProvider, $twig, $responseFormatter, $session);
+    }
+
+
+    /**Метод обертка для упрощенного биднига в контейнере
+     * @param string $className
+     * @param TableQueryParams|null $params
+     * @return mixed
+     */
+    public static function binding(string $className, ?TableQueryParams $params = null): array
+    {
+        return [
+            static::class => static function (ContainerInterface $container) use ($className, $params) {
+                $provider = new $className(
+                    $container->get(EntityManagerInterface::class),
+                    $container->get(FormFactoryInterface::class),
+                    $params
+                );
+                $implements = class_implements($provider);
+                if (!in_array(CatalogDataProviderInterface::class, $implements) || !in_array(
+                        CatalogFilterInterface::class,
+                        $implements
+                    )) {
+                    throw new InvalidArgumentException(
+                        "Class $className must implements CatalogDataProviderInterface && CatalogFilterInterface"
+                    );
+                }
+                return new static(
+                    $provider,
+                    $container->get(Twig::class),
+                    $container->get(ResponseFormatter::class),
+                    $container->get(SessionInterface::class),
+                    $container->get(RequestConvertor::class),
+                );
+            }
+        ];
+    }
+
+    protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
+    {
+        $collectorProxy->get('/form', [static::class, 'form']);
+    }
+
+
+    private function request_slim_to_symfony(SlimRequest $req): SymfonyRequest
+    {
+        return $this->requestConvertor->requestSlimToSymfony($req);
+    }
+
+
+    public function form(Request $request, Response $response): Response
+    {
+        if (!($this->dataProvider instanceof CatalogFormInterface)) {
+            throw new InvalidArgumentException('DataProvider must implements CatalogFormInterface');
+        }
+
+        $form = $this->dataProvider->form();
+
+        $form->handleRequest($this->request_slim_to_symfony($request));
+
+
+
+        // Проверка валидности формы
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Обработка данных формы, например, сохранение в базу данных
+            $data = $form->getData();
+
+            return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::REDIRECT);
+        }
+
+        return $this->twig->render(
+            $response,
+            static::FORM_TEMPLATE,
+            [
+                'form' => $form->createView()
+            ],
+        );
+    }
+
+
+}

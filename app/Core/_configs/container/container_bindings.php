@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 
+use App\Core\Services\RequestConvertor;
 use Clockwork\Clockwork;
 use Clockwork\DataSource\DoctrineDataSource;
 use Clockwork\Storage\FileStorage;
@@ -72,21 +73,21 @@ use App\Core\Services\Translator;
 use function DI\create;
 
 /**Если есть в проекте конфиг подгружаем его иначе берем из ядра*/
-$config_file = file_exists(CONFIG_PATH.'/config.php')
-    ? CONFIG_PATH.'/config.php' : CORE_CONFIG_PATH.'/core_config.php';
+$config_file = file_exists(CONFIG_PATH . '/config.php')
+    ? CONFIG_PATH . '/config.php' : CORE_CONFIG_PATH . '/core_config.php';
 
 /**Если есть в проекте маршруты подгружаем их иначе берем из ядра*/
-$route_file = file_exists(CONFIG_PATH.'/routes/routes.php')
-    ? CONFIG_PATH.'/routes/routes.php' : CORE_CONFIG_PATH.'/routes.php';
+$route_file = file_exists(CONFIG_PATH . '/routes/routes.php')
+    ? CONFIG_PATH . '/routes/routes.php' : CORE_CONFIG_PATH . '/routes.php';
 
 /**Если есть в проекте middleware подгружаем его иначе берем из ядра*/
-$middleware_file = file_exists(CONFIG_PATH.'/middleware.php')
-    ? CONFIG_PATH.'/middleware.php' : CORE_CONFIG_PATH.'/middleware.php';
+$middleware_file = file_exists(CONFIG_PATH . '/middleware.php')
+    ? CONFIG_PATH . '/middleware.php' : CORE_CONFIG_PATH . '/middleware.php';
 
 
-require_once __DIR__.'/../utils.php';
+require_once __DIR__ . '/../utils.php';
 
-$catalogComponentBindings = require APP_PATH.'/Core/Components/Catalog/_configs/container_bindings.php';
+$catalogComponentBindings = require APP_PATH . '/Core/Components/Catalog/_configs/container_bindings.php';
 
 $coreBindings = [
     App::class                              =>
@@ -148,10 +149,10 @@ $coreBindings = [
      * The following two bindings are needed for EntryFilesTwigExtension & AssetExtension to work for Twig
      */
     'webpack_encore.packages'               =>
-        static fn() => new Packages(new Package(new JsonManifestVersionStrategy(BUILD_PATH.'/manifest.json'))),
+        static fn() => new Packages(new Package(new JsonManifestVersionStrategy(BUILD_PATH . '/manifest.json'))),
     'webpack_encore.tag_renderer'           =>
         static fn(ContainerInterface $container) => new TagRenderer(
-            new EntrypointLookup(BUILD_PATH.'/entrypoints.json'),
+            new EntrypointLookup(BUILD_PATH . '/entrypoints.json'),
             $container->get('webpack_encore.packages')
         ),
     ResponseFactoryInterface::class         => static fn(App $app) => $app->getResponseFactory(),
@@ -185,7 +186,7 @@ $coreBindings = [
     Clockwork::class                        =>
         static function (EntityManagerInterface $entityManager) {
             $clockwork = new Clockwork();
-            $clockwork->storage(new FileStorage(STORAGE_PATH.'/clockwork'));
+            $clockwork->storage(new FileStorage(STORAGE_PATH . '/clockwork'));
             $clockwork->addDataSource(new DoctrineDataSource($entityManager));
             return $clockwork;
         },
@@ -230,6 +231,7 @@ $coreBindings = [
     },
     Translator::class                       => static fn(Config $config) => new Translator($config->get('lang')),
     Purifier::class                         => static fn() => Purifier::build(),
+    RequestConvertor::class                 => create(RequestConvertor::class),
 ];
 
 return $coreBindings + $catalogComponentBindings;

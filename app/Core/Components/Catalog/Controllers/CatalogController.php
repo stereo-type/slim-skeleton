@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Controllers;
 
-use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
-use App\Core\Components\Catalog\Model\Filter\Type\Page;
-use App\Core\Constants\ServerStatus;
 use Exception;
 use InvalidArgumentException;
 
@@ -26,11 +23,14 @@ use Twig\Error\SyntaxError;
 use Doctrine\ORM\EntityManagerInterface;
 
 use App\Core\ResponseFormatter;
+use App\Core\Constants\ServerStatus;
 use App\Core\Contracts\SessionInterface;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Providers\CatalogFilterInterface;
 use App\Core\Components\Catalog\Providers\CatalogDataProviderInterface;
 use App\Core\Components\Catalog\Model\Pagination\PagingBar;
+use App\Core\Components\Catalog\Model\Filter\Type\Page;
+use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
 
 
 /**Класс для построения контроллеров таблиц без привязки к сущностям (Entity). Релизация:
@@ -110,12 +110,12 @@ abstract class CatalogController
             $response,
             static::TABLE_TEMPLATE,
             [
-                'id' => $this->get_catalog_id(),
+                'id'                => $this->get_catalog_id(),
                 'requestIndexRoute' => $this->get_index_route(),
-                'tableHeading' => $this->get_name(),
-                'filtersCatalog' => $filters->render(),
-                'tableContent' => $content['table']->render(),
-                'tablePaginbar' => $content['paginbar']->render($this->twig),
+                'tableHeading'      => $this->get_name(),
+                'filtersCatalog'    => $filters->render(),
+                'tableContent'      => $content['table']->render(),
+                'tablePaginbar'     => $content['paginbar']->render($this->twig),
             ],
         );
     }
@@ -185,9 +185,9 @@ abstract class CatalogController
         );
 
         return [
-            'table' => $this->dataProvider->get_table($tableData->records, $params),
+            'table'    => $this->dataProvider->get_table($tableData->records, $params),
             'paginbar' => $paginbar,
-            'page' => $tableData->currentPage + 1,
+            'page'     => $tableData->currentPage + 1,
             'per_page' => $tableData->perPage,
         ];
     }
@@ -222,6 +222,10 @@ abstract class CatalogController
         ];
     }
 
+    protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
+    {
+    }
+
     public static function routing(App $app, string $route): void
     {
         if (stripos($route, '/') !== 0) {
@@ -229,9 +233,11 @@ abstract class CatalogController
         }
         $reportName = substr($route, 1);
         $class = static::class;
-        $app->group($route, function (RouteCollectorProxy $collectorProxy) use ($class, $reportName) {
+        $method = 'additional_routes';
+        $app->group($route, function (RouteCollectorProxy $collectorProxy) use ($class, $reportName, $method) {
             $collectorProxy->get('', [$class, 'index'])->setName($reportName);
             $collectorProxy->post('/filter', [$class, 'filter']);
+            $class::$method($collectorProxy);
         });
     }
 

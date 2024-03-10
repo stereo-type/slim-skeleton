@@ -9,34 +9,35 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Providers;
 
-
-use App\Core\Components\Catalog\Enum\EntityButton;
-use App\Core\Components\Catalog\Model\Filter\Collections\FilterComparisons;
-use App\Core\Components\Catalog\Model\Table\Cell;
-use App\Core\Components\Catalog\Model\Table\Collections\Attributes;
-use App\Core\Entity\User;
 use DateTime;
-use Doctrine\Common\Collections\Expr\Comparison;
-use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\QueryBuilder;
 use ReflectionClass;
 use InvalidArgumentException;
 
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-use Doctrine\ORM\EntityManager;
-
-use App\Core\Components\Catalog\Enum\FilterType;
-use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
-use App\Core\Components\Catalog\Model\Filter\Type\Filter;
-use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use Slim\Views\Twig;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query\QueryException;
+use Doctrine\Common\Collections\Expr\Comparison;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-abstract class EntityDataProvider extends AbstractDataProvider
+use App\Core\Components\Catalog\Enum\FilterType;
+use App\Core\Components\Catalog\Enum\EntityButton;
+use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
+use App\Core\Components\Catalog\Model\Filter\Type\Filter;
+use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
+use App\Core\Components\Catalog\Model\Filter\Collections\FilterComparisons;
+abstract class EntityDataProvider extends AbstractDataProvider implements CatalogFormInterface
 {
 
     public const ENTITY_CLASS = null;
@@ -47,8 +48,11 @@ abstract class EntityDataProvider extends AbstractDataProvider
 
     protected ReflectionClass $reflection;
 
-    public function __construct(EntityManager $entityManager, ?TableQueryParams $params = null)
-    {
+    public function __construct(
+        EntityManager $entityManager,
+        private readonly FormFactoryInterface $formFactory,
+        ?TableQueryParams $params = null
+    ) {
         if (is_null(static::ENTITY_CLASS)) {
             throw new InvalidArgumentException('Должен быть определен класс сущности');
         }
@@ -221,5 +225,35 @@ abstract class EntityDataProvider extends AbstractDataProvider
         return $twig->fetch('/catalog/manage_buttons.twig', ['buttons' => $buttons]);
     }
 
+
+
+    public function form(): FormInterface
+    {
+        $formBuilder = $this->formFactory->createNamedBuilder(
+            'catalog_entity_builder',
+            FormType::class,
+            null,
+            ['data_class' => static::ENTITY_CLASS]
+        );
+
+        $metadata = $this->entityManager->getClassMetadata(static::ENTITY_CLASS);
+
+        foreach ($metadata->getFieldNames() as $fieldName) {
+            if (!$metadata->isIdentifier($fieldName)) {
+                $options = [];
+                $fieldType = TextType::class;
+
+                if ($metadata->getTypeOfField($fieldName) === 'datetime') {
+                    $fieldType = DateType::class;
+                    $options = ['data' => new DateTime()];
+                }
+
+                $formBuilder->add($fieldName, $fieldType, $options);
+            }
+        }
+
+        $formBuilder->add('submit', SubmitType::class, ['label' => 'Submit']);
+        return $formBuilder->getForm();
+    }
 
 }

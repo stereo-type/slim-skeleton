@@ -32,15 +32,6 @@ enum EntityButton: string
         };
     }
 
-//    public function button_class(): string
-//    {
-//        return match ($this) {
-//            self::create => 'btn-primary',
-//            self::edit => 'btn-info',
-//            self::copy => 'btn-warning',
-//            self::delete => 'btn-danger',
-//        };
-//    }
     public function button_class(): string
     {
         return match ($this) {
