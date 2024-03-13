@@ -21,18 +21,19 @@ abstract class Filter
     readonly public Attributes $attributes;
 
     public const FILTER_PARAM_VALUE = 'value';
+    public const FORM_CONTROL = true;
 
     public const DEFAULT_LENGTH = 2;
     /**Игнорировать ли данный фильтр при формировании запроса*/
     public const IGNORE_IN_FILTER_REQUEST = false;
 
     /**
-     * @param  string  $name
-     * @param  Attributes  $attributes
-     * @param  null  $defaultValue
-     * @param  array  $params
-     * @param  int  $length
-     * @param  ParamType  $paramType
+     * @param string $name
+     * @param Attributes $attributes
+     * @param null $defaultValue
+     * @param array $params
+     * @param int $length
+     * @param ParamType $paramType
      */
     public function __construct(
         readonly public string $name,
@@ -47,10 +48,16 @@ abstract class Filter
         if (!isset($attributes['title'])) {
             $attributes->add(new Attribute('title', $name));
         }
+
+        $additional_class = "length-$this->length";
+        if (static::FORM_CONTROL) {
+            $additional_class .= ' form-control';
+        }
+
         $this->attributes = Attributes::mergeAttributes(
             Attributes::MERGE_JOIN,
             Attributes::fromArray($attributes),
-            Attributes::fromArray(['class' => "length-$this->length form-control"]),
+            Attributes::fromArray(['class' => $additional_class]),
         );
     }
 
@@ -114,7 +121,7 @@ abstract class Filter
         if ($instance instanceof self) {
             return $instance;
         }
-        throw new RuntimeException('Incorrect instance '.$class);
+        throw new RuntimeException('Incorrect instance ' . $class);
     }
 
 

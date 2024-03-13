@@ -30,6 +30,6 @@ readonly class UserProfileService
             throw new RuntimeException('User not found');
         }
 
-        return new UserProfileData($user->getEmail(), $user->getName(), $user->hasTwoFactorAuthEnabled());
+        return new UserProfileData($user->getEmail(), $user->getName(), $user->isTwoFactor());
     }
 }

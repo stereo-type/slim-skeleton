@@ -9,13 +9,14 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Providers;
 
+use Slim\Views\Twig;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+
 use App\Core\Components\Catalog\Model\Filter\TableData;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Model\Table\Table;
 use App\Core\Components\Catalog\Model\Table\Collections\Rows;
-use Slim\Views\Twig;
 
 interface CatalogDataProviderInterface
 {

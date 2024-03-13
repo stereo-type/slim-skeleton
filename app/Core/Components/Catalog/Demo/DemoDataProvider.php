@@ -12,12 +12,14 @@ namespace App\Core\Components\Catalog\Demo;
 use DateTime;
 
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-use Doctrine\Common\Collections\Expr\Comparison;
+use Slim\Views\Twig;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Common\Collections\Expr\Comparison;
 
 use App\Core\Entity\User;
 use App\Core\Components\Catalog\Enum\FilterType;
@@ -35,13 +37,12 @@ use App\Core\Components\Catalog\Model\Table\Collections\Rows;
 use App\Core\Components\Catalog\Model\Table\Row;
 use App\Core\Components\Catalog\Model\Table\Table;
 use App\Core\Components\Catalog\Providers\AbstractDataProvider;
-use Slim\Views\Twig;
 
 class DemoDataProvider extends AbstractDataProvider
 {
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager, ContainerInterface $container)
     {
-        parent::__construct($entityManager, new TableQueryParams(orderBy: 'u.id'));
+        parent::__construct($entityManager, $container, new TableQueryParams(orderBy: 'u.id'));
     }
 
 

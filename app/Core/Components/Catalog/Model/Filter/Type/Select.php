@@ -19,6 +19,8 @@ class Select extends Filter
 {
     private array $options;
 
+    public const FORM_CONTROL = false;
+
     /**
      * @param string $name
      * @param Attributes $attributes
@@ -40,6 +42,13 @@ class Select extends Filter
         }
 
         $this->options = $params['options'];
+
+        $attributes = Attributes::mergeAttributes(
+            Attributes::MERGE_JOIN,
+            Attributes::fromArray($attributes),
+            Attributes::fromArray(['class' => 'form-select']),
+        );
+
         parent::__construct($name, $attributes, $defaultValue, $params, $length, $paramType);
     }
 

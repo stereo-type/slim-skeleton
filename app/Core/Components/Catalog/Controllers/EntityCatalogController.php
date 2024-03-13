@@ -54,6 +54,7 @@ abstract class EntityCatalogController extends CatalogController
                 $provider = new $className(
                     $container->get(EntityManagerInterface::class),
                     $container->get(FormFactoryInterface::class),
+                    $container,
                     $params
                 );
                 $implements = class_implements($provider);
@@ -79,6 +80,7 @@ abstract class EntityCatalogController extends CatalogController
     protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
     {
         $collectorProxy->get('/form', [static::class, 'form']);
+        $collectorProxy->post('/form', [static::class, 'form']);
     }
 
 
@@ -94,16 +96,13 @@ abstract class EntityCatalogController extends CatalogController
             throw new InvalidArgumentException('DataProvider must implements CatalogFormInterface');
         }
 
-        $form = $this->dataProvider->form();
-
+        $form = $this->dataProvider->build_form();
         $form->handleRequest($this->request_slim_to_symfony($request));
-
-
 
         // Проверка валидности формы
         if ($form->isSubmitted() && $form->isValid()) {
             // Обработка данных формы, например, сохранение в базу данных
-            $data = $form->getData();
+            $this->dataProvider->save_form_data($form->getData());
 
             return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::REDIRECT);
         }

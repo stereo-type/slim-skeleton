@@ -26,6 +26,7 @@ use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Symfony\Component\Translation\Translator;
 use Symfony\WebpackEncoreBundle\Twig\EntryFilesTwigExtension;
 use Twig\Error\LoaderError;
+use Twig\Extension\DebugExtension;
 use Twig\Extra\Intl\IntlExtension;
 
 use App\Core\Config;
@@ -69,6 +70,7 @@ readonly class Builder
         $twig = Twig::create($paths, [
             'cache'       => STORAGE_PATH.'/cache/templates',
             'auto_reload' => AppEnvironment::isDevelopment($config->get('app_environment')),
+            'debug'       => AppEnvironment::isDevelopment($config->get('app_environment')),
         ]);
         $translator = new Translator('en_En');
         $translator->addLoader('yaml', $container->get(YamlFileLoader::class));
@@ -79,6 +81,7 @@ readonly class Builder
         $twig->addExtension(new AssetExtension($container->get('webpack_encore.packages')));
         $twig->addExtension(new FormExtension());
         $twig->addExtension(new StimulusExtension());
+        $twig->addExtension(new DebugExtension());
         $formEngine = new TwigRendererEngine(
             $config->get('twig.default_form_theme', ['form_div_layout.html.twig']), $twig->getEnvironment()
         );

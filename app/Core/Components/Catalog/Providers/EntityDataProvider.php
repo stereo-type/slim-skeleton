@@ -10,20 +10,27 @@ declare(strict_types=1);
 namespace App\Core\Components\Catalog\Providers;
 
 use DateTime;
+use Exception;
 use ReflectionClass;
 use InvalidArgumentException;
 
+use Psr\Container\ContainerInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 use Slim\Views\Twig;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
+use Symfony\Component\Form\FormBuilderInterface;
+
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\Common\Collections\Expr\Comparison;
+
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -31,12 +38,14 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
+use App\Core\Services\EntityManagerService;
 use App\Core\Components\Catalog\Enum\FilterType;
 use App\Core\Components\Catalog\Enum\EntityButton;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Model\Filter\Type\Filter;
 use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
 use App\Core\Components\Catalog\Model\Filter\Collections\FilterComparisons;
+
 abstract class EntityDataProvider extends AbstractDataProvider implements CatalogFormInterface
 {
 
@@ -51,6 +60,7 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
     public function __construct(
         EntityManager $entityManager,
         private readonly FormFactoryInterface $formFactory,
+        ContainerInterface $container,
         ?TableQueryParams $params = null
     ) {
         if (is_null(static::ENTITY_CLASS)) {
@@ -66,7 +76,11 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
             throw new InvalidArgumentException('Класс сущности должен иметь аттрибут Doctrine\ORM\Mapping\Entity');
         }
 
-        parent::__construct($entityManager, $params ?? new TableQueryParams(orderBy: self::ENTITY_ALIES . '.id'));
+        parent::__construct(
+            $entityManager,
+            $container,
+            $params ?? new TableQueryParams(orderBy: self::ENTITY_ALIES . '.id')
+        );
     }
 
     /**Метод исключения свойств сущности
@@ -89,6 +103,11 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
      * @return array
      */
     public function exclude_entity_filters(): array
+    {
+        return [];
+    }
+
+    public function exclude_form_elements(): array
     {
         return [];
     }
@@ -222,12 +241,38 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
     protected function manage_buttons(Twig $twig, int $id): string
     {
         $buttons = array_map(static fn($item) => $item->toMap(), $this->buttons());
-        return $twig->fetch('/catalog/manage_buttons.twig', ['buttons' => $buttons]);
+        return $twig->fetch('/catalog/manage_buttons.twig', ['buttons' => $buttons, 'id' => $id]);
+    }
+
+    protected function form_actions(FormBuilderInterface $formBuilder): void
+    {
+        $formBuilder
+            ->add('form_actions', FormType::class, [
+                'mapped' => false,
+                'label'  => false,
+                'attr'   => ['class' => 'not-form-control input-group mt-5 justify-content-evenly'],
+            ])
+            ->get('form_actions')
+            ->add('cancel', ButtonType::class, [
+                'label' => 'Cancel',
+                'attr'  =>
+                    [
+                        'class' =>
+                            'form-group btn text-light-emphasis bg-light-subtle border-light-subtle form-control mr-3 '
+                    ],
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'Submit',
+                'attr'  =>
+                    [
+                        'class' =>
+                            'form-group btn text-primary-emphasis bg-primary-subtle border-primary-subtle form-control'
+                    ],
+            ]);
     }
 
 
-
-    public function form(): FormInterface
+    public function build_form(): FormInterface
     {
         $formBuilder = $this->formFactory->createNamedBuilder(
             'catalog_entity_builder',
@@ -238,22 +283,61 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
 
         $metadata = $this->entityManager->getClassMetadata(static::ENTITY_CLASS);
 
+        $exclude = $this->exclude_form_elements();
+
         foreach ($metadata->getFieldNames() as $fieldName) {
+            if (in_array($fieldName, $exclude, true)) {
+                continue;
+            }
+
             if (!$metadata->isIdentifier($fieldName)) {
                 $options = [];
                 $fieldType = TextType::class;
 
                 if ($metadata->getTypeOfField($fieldName) === 'datetime') {
                     $fieldType = DateType::class;
-                    $options = ['data' => new DateTime()];
+                    $options = [
+                        'data' => new DateTime(),
+                        'widget' => 'single_text'
+                    ];
                 }
 
                 $formBuilder->add($fieldName, $fieldType, $options);
             }
         }
 
-        $formBuilder->add('submit', SubmitType::class, ['label' => 'Submit']);
+        $this->form_actions($formBuilder);
+
         return $formBuilder->getForm();
+    }
+
+
+    public function before_save(mixed $data): mixed
+    {
+        return [];
+    }
+
+    public function after_save(mixed $data): mixed
+    {
+        return [];
+    }
+
+    /**
+     * @param mixed $data
+     * @return void
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws Exception
+     */
+    public function save_form_data(mixed $data): void
+    {
+        if (get_class($data) === static::ENTITY_CLASS) {
+            $this->before_save($data);
+            $this->container->get(EntityManagerService::class)->sync($data);
+            $this->after_save($data);
+        } else {
+            throw new Exception('data must be type ' . static::ENTITY_CLASS);
+        }
     }
 
 }

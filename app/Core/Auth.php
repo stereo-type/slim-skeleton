@@ -65,7 +65,7 @@ class Auth implements AuthInterface
             return AuthAttemptStatus::FAILED;
         }
 
-        if ($user->hasTwoFactorAuthEnabled()) {
+        if ($user->isTwoFactor()) {
             $this->startLoginWith2FA($user);
 
             return AuthAttemptStatus::TWO_FACTOR_AUTH;

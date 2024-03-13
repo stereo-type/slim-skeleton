@@ -7,9 +7,30 @@
 
 
 {% block content %}
-    <div class="categories container content-body">
+    <div class="container content-body">
         {{ form_start(form) }}
+
+        {{ form_errors(form) }}
+
         {{ csrf.fields | raw }}
+
+        {% for child in form.children %}
+            <div class="mb-3">
+                {{ form_label(child, '', {'label_attr' : {'class' : 'form-label'}}) }}
+
+                {% set attributes = child.vars.attr.class|default('') %}
+                {% if attributes is not defined  or 'not-form-control' not in attributes|split(' ') %}
+                    {{ form_widget(child, {'attr' : {'class' : 'form-control'}}) }}
+                {% else %}
+                    {{ form_widget(child) }}
+                {% endif %}
+
+                <div class="invalid-feedback">
+                    {#                                    {{ form_errors(child.name) }} #}
+                </div>
+            </div>
+        {% endfor %}
+
         {{ form_end(form) }}
     </div>
 {% endblock %}

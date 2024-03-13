@@ -202,7 +202,7 @@ abstract class CatalogController
     {
         return [
             static::class => static function (ContainerInterface $container) use ($className, $params) {
-                $provider = new $className($container->get(EntityManagerInterface::class), $params);
+                $provider = new $className($container->get(EntityManagerInterface::class), $container, $params);
                 $implements = class_implements($provider);
                 if (!in_array(CatalogDataProviderInterface::class, $implements) || !in_array(
                         CatalogFilterInterface::class,

@@ -33,8 +33,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                         }
                     }
-                } else {
-                    console.error('not a link', target);
                 }
                 if (newPage !== null) {
                     perpageInput.value = max(newPage, 0);

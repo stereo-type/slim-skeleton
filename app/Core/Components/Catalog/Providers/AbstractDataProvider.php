@@ -9,17 +9,18 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Providers;
 
+use Exception;
+use ReflectionObject;
+
+use Psr\Container\ContainerInterface;
+use Slim\Views\Twig;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\Pagination\Paginator;
+
 use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
 use App\Core\Components\Catalog\Model\Filter\TableData;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Model\Table\Table;
-use App\Core\Entity\User;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Tools\Pagination\Paginator;
-use Exception;
-use ReflectionObject;
-use Slim\Views\Twig;
 
 abstract class AbstractDataProvider implements CatalogDataProviderInterface, CatalogFilterInterface
 {
@@ -27,8 +28,11 @@ abstract class AbstractDataProvider implements CatalogDataProviderInterface, Cat
     protected TableQueryParams $params;
 
     /**При необходимости переопределения порядка сортировки по умолчанию/page/perpage, переопределить конструктор или использовать params*/
-    public function __construct(protected readonly EntityManager $entityManager, ?TableQueryParams $params = null)
-    {
+    public function __construct(
+        protected readonly EntityManager $entityManager,
+        protected readonly ContainerInterface $container,
+        ?TableQueryParams $params = null
+    ) {
         if (is_null($params)) {
             $this->params = new TableQueryParams(new Filters());
         } else {

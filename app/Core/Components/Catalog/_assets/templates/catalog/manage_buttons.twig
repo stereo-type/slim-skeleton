@@ -9,6 +9,6 @@
 {#        <button type="button" class="btn btn-primary">{{ translate('delete') }}</button>#}
 {#    {% endif %}#}
     {% for button in buttons%}
-        <button type="button" class="btn {{ button.button_class }}" title="{{ button.name }}"><i class="{{ button.icon }}"></i></button>
+        <button type="button" class="btn {{ button.button_class }}" title="{{ button.name }}" target-id="{{ id }}"><i class="{{ button.icon }}"></i></button>
     {% endfor %}
 </div>

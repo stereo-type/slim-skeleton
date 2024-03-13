@@ -102,7 +102,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function hasTwoFactorAuthEnabled(): bool
+    public function isTwoFactor(): bool
     {
         return $this->twoFactor;
     }
