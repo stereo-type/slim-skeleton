@@ -35,7 +35,8 @@ return static function (App $app) {
               ->add(ValidateSignatureMiddleware::class);
         $group->post('/verify', [VerifyController::class, 'resend'])
               ->setName('resendVerification')
-              ->add(RateLimitMiddleware::class);
+//              ->add(RateLimitMiddleware::class)
+        ;
     })->add(AuthMiddleware::class);
 
     $app->group('', function (RouteCollectorProxy $guest) {
@@ -43,22 +44,27 @@ return static function (App $app) {
         $guest->get('/register', [AuthController::class, 'registerView']);
         $guest->post('/login', [AuthController::class, 'logIn'])
               ->setName('logIn')
-              ->add(RateLimitMiddleware::class);
+//              ->add(RateLimitMiddleware::class)
+        ;
         $guest->post('/register', [AuthController::class, 'register'])
               ->setName('register')
-              ->add(RateLimitMiddleware::class);
+//              ->add(RateLimitMiddleware::class)
+        ;
         $guest->post('/login/two-factor', [AuthController::class, 'twoFactorLogin'])
               ->setName('twoFactorLogin')
               ->add(RateLimitMiddleware::class);
         $guest->get('/forgot-password', [PasswordResetController::class, 'showForgotPasswordForm']);
         $guest->get('/reset-password/{token}', [PasswordResetController::class, 'showResetPasswordForm'])
               ->setName('password-reset')
-              ->add(ValidateSignatureMiddleware::class);
+              ->add(ValidateSignatureMiddleware::class)
+        ;
         $guest->post('/forgot-password', [PasswordResetController::class, 'handleForgotPasswordRequest'])
               ->setName('handleForgotPassword')
-              ->add(RateLimitMiddleware::class);
+//              ->add(RateLimitMiddleware::class)
+        ;
         $guest->post('/reset-password/{token}', [PasswordResetController::class, 'resetPassword'])
               ->setName('resetPassword')
-              ->add(RateLimitMiddleware::class);
+//              ->add(RateLimitMiddleware::class)
+        ;
     })->add(GuestMiddleware::class);
 };

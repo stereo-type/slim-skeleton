@@ -31,7 +31,7 @@ return static function (App $app) {
 
     $app->add(MethodOverrideMiddleware::class);
     $app->add(CsrfFieldsMiddleware::class);
-    $app->add('csrf');
+//    $app->add('csrf');
     $app->add(TwigMiddleware::create($app, $container->get(Twig::class)));
     $app->add(ValidationExceptionMiddleware::class);
     $app->add(ValidationErrorsMiddleware::class);
