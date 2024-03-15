@@ -1,7 +1,7 @@
 version: '3.3'
 
 services:
-  app:
+  ss-app:
     build:
       context: ""
       dockerfile: Dockerfile
@@ -19,7 +19,7 @@ services:
     volumes:
       - ../:/var/www
       - ./local.ini:/usr/local/etc/php/conf.d/local.ini
-  nginx:
+  ss-nginx:
     image: nginx:1.19-alpine
     container_name: "${APP_NAME}-nginx"
     restart: always
@@ -28,7 +28,7 @@ services:
     volumes:
       - ../:/var/www
       - ./nginx:/etc/nginx/conf.d
-  db:
+  ss-db:
     container_name: "${APP_NAME}-db"
     image: mysql:8.0
     volumes:
@@ -38,7 +38,7 @@ services:
       MYSQL_ROOT_PASSWORD: '${DB_PASS}'
     ports:
       - "3307:3306"
-  mailhog:
+  ss-mailhog:
     container_name: "${APP_NAME}-mailhog"
     image: mailhog/mailhog
     restart: always
@@ -47,7 +47,7 @@ services:
     ports:
       - "8025:8025"
       - "1025:1025"
-  redis:
+  ss-redis:
     image: redis:latest
     container_name: "${APP_NAME}-redis"
     restart: always
