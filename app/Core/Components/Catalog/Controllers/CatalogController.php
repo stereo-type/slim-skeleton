@@ -239,9 +239,7 @@ abstract class CatalogController
             $collectorProxy->get('', [$class, 'index'])->setName($reportName);
             $collectorProxy->post('/filter', [$class, 'filter']);
             $class::$method($collectorProxy);
-        })
-//            ->add(AuthMiddleware::class)
-        ;
+        })->add(AuthMiddleware::class);
     }
 
     private function _class_cache_key(): string
