@@ -220,10 +220,12 @@ $coreBindings = [
             $config->get('limiter'), new CacheStorage($redisAdapter)
         ),
     FormFactoryInterface::class             => static function () {
+        $validatorBuilder = Validation::createValidatorBuilder();
+        $validatorBuilder->enableAttributeMapping();
+
         $extensions = [
             new HttpFoundationExtension(),
-            new ValidatorExtension(Validation::createValidator()),
-
+            new ValidatorExtension($validatorBuilder->getValidator(), false),
         ];
         $resolvedTypeFactory = new ResolvedFormTypeFactory();
         $registry = new FormRegistry($extensions, $resolvedTypeFactory);

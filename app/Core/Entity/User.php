@@ -14,6 +14,7 @@ use Doctrine\ORM\Mapping\Table;
 use App\Core\Contracts\User\OwnableInterface;
 use App\Core\Contracts\User\UserInterface;
 use App\Core\Entity\Traits\HasTimestamps;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[Entity, Table('users')]
 #[HasLifecycleCallbacks]
@@ -24,12 +25,19 @@ class User implements UserInterface
     #[Id, Column(options: ['unsigned' => true]), GeneratedValue]
     private int $id;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 5)]
     #[Column]
     private string $name;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 5)]
+    #[Assert\Email]
     #[Column]
     private string $email;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 5)]
     #[Column]
     private string $password;
 

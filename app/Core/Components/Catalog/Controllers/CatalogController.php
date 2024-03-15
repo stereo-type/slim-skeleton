@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Controllers;
 
+use App\Core\Middleware\AuthMiddleware;
 use Exception;
 use InvalidArgumentException;
 
@@ -238,7 +239,7 @@ abstract class CatalogController
             $collectorProxy->get('', [$class, 'index'])->setName($reportName);
             $collectorProxy->post('/filter', [$class, 'filter']);
             $class::$method($collectorProxy);
-        });
+        })->add(AuthMiddleware::class);
     }
 
     private function _class_cache_key(): string

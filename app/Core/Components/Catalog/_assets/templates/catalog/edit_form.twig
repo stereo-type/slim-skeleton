@@ -14,20 +14,40 @@
 
         {{ csrf.fields | raw }}
 
+
+        {% set nonFormFieldErrors = [] %}
+        {% for errorKey, errorMessage in errors %}
+            {% if errorKey not in form.children|keys %}
+                {% set nonFormFieldErrors = nonFormFieldErrors|merge([errorMessage]) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if nonFormFieldErrors is not empty %}
+            <div class="commmon-form-errors mb-3">
+                {% for _error in nonFormFieldErrors %}
+                    <div class="invalid-feedback d-block">
+                        {{ _error }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         {% for child in form.children %}
             <div class="mb-3">
                 {{ form_label(child, '', {'label_attr' : {'class' : 'form-label'}}) }}
 
+                {% set _value = old[form.vars.name][child.vars.name] ?? null %}
                 {% set attributes = child.vars.attr.class|default('') %}
                 {% if attributes is not defined  or 'not-form-control' not in attributes|split(' ') %}
-                    {{ form_widget(child, {'attr' : {'class' : 'form-control'}}) }}
+                    {{ form_widget(child, {'attr' : {'class' : 'form-control', 'value' : _value}}) }}
                 {% else %}
                     {{ form_widget(child) }}
                 {% endif %}
-
-                <div class="invalid-feedback">
-                    {#                                    {{ form_errors(child.name) }} #}
-                </div>
+                {% if errors[child.vars.name] is not empty %}
+                    <div class="invalid-feedback d-block">
+                        {{ errors[child.vars.name] }}
+                    </div>
+                {% endif %}
             </div>
         {% endfor %}
 

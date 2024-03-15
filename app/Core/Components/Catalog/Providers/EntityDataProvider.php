@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Providers;
 
+use App\Core\Config;
+use App\Core\Enum\AppEnvironment;
 use DateTime;
 use Exception;
 use ReflectionClass;
@@ -39,6 +41,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 use App\Core\Services\EntityManagerService;
+use App\Core\Exception\ValidationException;
 use App\Core\Components\Catalog\Enum\FilterType;
 use App\Core\Components\Catalog\Enum\EntityButton;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
@@ -331,12 +334,22 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
      */
     public function save_form_data(mixed $data): void
     {
-        if (get_class($data) === static::ENTITY_CLASS) {
-            $this->before_save($data);
-            $this->container->get(EntityManagerService::class)->sync($data);
-            $this->after_save($data);
-        } else {
-            throw new Exception('data must be type ' . static::ENTITY_CLASS);
+        try {
+            if (get_class($data) === static::ENTITY_CLASS) {
+                $this->before_save($data);
+                $this->container->get(EntityManagerService::class)->sync($data);
+                $this->after_save($data);
+            } else {
+                throw new Exception('data must be type ' . static::ENTITY_CLASS);
+            }
+        } catch (\Throwable $e) {
+            $message = $e->getMessage();
+            if (AppEnvironment::showErrorsDetails($this->container)) {
+                $message .=
+                    PHP_EOL . "File: {$e->getFile()}" .
+                    PHP_EOL . "Line: {$e->getFile()}";
+            }
+            throw new ValidationException([$message]);
         }
     }
 
