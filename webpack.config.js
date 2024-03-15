@@ -8,10 +8,11 @@ if (! Encore.isRuntimeEnvironmentConfigured()) {
     Encore.configureRuntimeEnvironment(process.env.NODE_ENV || "dev")
 }
 
-const coreResourcesPath = path.join(__dirname, 'app', 'Core', 'assets', 'js');
+const appResourcesPath = path.join(__dirname, 'app');
 const projectResourcesPath = path.join(__dirname, 'resources', 'js');
 
 // Функция для добавления файлов в сборку
+//TODO мб ускорить как то
 const addCoreFilesToBuild = (directoryPath) => {
     fs.readdirSync(directoryPath).forEach(file => {
         const filePath = path.join(directoryPath, file);
@@ -27,7 +28,7 @@ const addCoreFilesToBuild = (directoryPath) => {
 };
 
 // Добавляем файлы из app/Core/resources в сборку
-addCoreFilesToBuild(coreResourcesPath);
+addCoreFilesToBuild(appResourcesPath);
 addCoreFilesToBuild(projectResourcesPath);
 Encore
     // directory where compiled assets will be stored
@@ -76,7 +77,7 @@ Encore
     })
 
     .copyFiles({
-        from: "./app/Core/assets/images",
+        from: "./app/Core/_assets/images",
         to: "images/[path][name].[hash:8].[ext]",
         pattern: /\.(png|jpg|jpeg|gif)$/
     })

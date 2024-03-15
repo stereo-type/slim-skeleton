@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types = 1);
+
+use App\Core\Config;
+use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
+use Doctrine\Migrations\Configuration\Migration\PhpFile;
+use Doctrine\Migrations\DependencyFactory;
+use Doctrine\ORM\Tools\Console\ConsoleRunner;
+use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
+use Symfony\Component\Console\Application;
+use Doctrine\ORM\EntityManagerInterface;
+
+$container = require 'bootstrap.php';
+$config    = $container->get(Config::class);
+
+$entityManager     = $container->get(EntityManagerInterface::class);
+$dependencyFactory = DependencyFactory::fromEntityManager(
+    new PhpFile(CORE_CONFIG_PATH . '/migrations.php'),
+    new ExistingEntityManager($entityManager)
+);
+
+$migrationCommands = require CORE_CONFIG_PATH . '/commands/migration_commands.php';
+$customCommands    = require CORE_CONFIG_PATH . '/commands/commands.php';
+
+$cliApp = new Application($config->get('app_name'), $config->get('app_version'));
+
+ConsoleRunner::addCommands($cliApp, new SingleManagerProvider($entityManager));
+
+$cliApp->addCommands($migrationCommands($dependencyFactory));
+$cliApp->addCommands(array_map(static fn($command) => $container->get($command), $customCommands));
+
+$cliApp->run();

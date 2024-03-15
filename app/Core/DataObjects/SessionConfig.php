@@ -6,14 +6,14 @@ namespace App\Core\DataObjects;
 
 use App\Core\Enum\SameSite;
 
-class SessionConfig
+readonly class SessionConfig
 {
     public function __construct(
-        public readonly string $name,
-        public readonly string $flashName,
-        public readonly bool $secure,
-        public readonly bool $httpOnly,
-        public readonly SameSite $sameSite
+        public string $name,
+        public string $flashName,
+        public bool $secure,
+        public bool $httpOnly,
+        public SameSite $sameSite
     ) {
     }
 }

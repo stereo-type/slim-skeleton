@@ -11,11 +11,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class StartSessionsMiddleware implements MiddlewareInterface
+readonly class StartSessionsMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly SessionInterface $session,
-        private readonly RequestService $requestService
+        private SessionInterface $session,
+        private RequestService $requestService
     ) {
     }
 
@@ -25,7 +25,7 @@ class StartSessionsMiddleware implements MiddlewareInterface
 
         $response = $handler->handle($request);
 
-        if ($request->getMethod() === 'GET' && ! $this->requestService->isXhr($request)) {
+        if ($request->getMethod() === 'GET' && ! $this->requestService->isAjax($request)) {
             $this->session->put('previousUrl', (string) $request->getUri());
         }
 

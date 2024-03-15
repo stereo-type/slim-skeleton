@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Core\Services;
 
@@ -8,9 +8,9 @@ use App\Core\Contracts\SessionInterface;
 use App\Core\DataObjects\DataTableQueryParams;
 use Psr\Http\Message\ServerRequestInterface;
 
-class RequestService
+readonly class RequestService
 {
-    public function __construct(private readonly SessionInterface $session)
+    public function __construct(private SessionInterface $session)
     {
     }
 
@@ -18,7 +18,7 @@ class RequestService
     {
         $referer = $request->getHeader('referer')[0] ?? '';
 
-        if (! $referer) {
+        if (!$referer) {
             return $this->session->get('previousUrl');
         }
 
@@ -31,7 +31,7 @@ class RequestService
         return $referer;
     }
 
-    public function isXhr(ServerRequestInterface $request): bool
+    public function isAjax(ServerRequestInterface $request): bool
     {
         return $request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest';
     }
@@ -44,12 +44,12 @@ class RequestService
         $orderDir = $params['order'][0]['dir'];
 
         return new DataTableQueryParams(
-            (int) $params['start'],
-            (int) $params['length'],
+            (int)$params['start'],
+            (int)$params['length'],
             $orderBy,
             $orderDir,
             $params['search']['value'],
-            (int) $params['draw']
+            (int)$params['draw']
         );
     }
 
@@ -57,8 +57,8 @@ class RequestService
     {
         $serverParams = $request->getServerParams();
 
-        if (in_array($serverParams['REMOTE_ADDR'], $trustedProxies, true)
-            && isset($serverParams['HTTP_X_FORWARDED_FOR'])) {
+        if (isset($serverParams['HTTP_X_FORWARDED_FOR'])
+            && in_array($serverParams['REMOTE_ADDR'], $trustedProxies, true)) {
             $ips = explode(',', $serverParams['HTTP_X_FORWARDED_FOR']);
 
             return trim($ips[0]);

@@ -1,0 +1,33 @@
+{% extends 'layout.twig' %}
+
+{% set id =   id?? random(0, 10000) %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('catalog_filter') }}
+    {{ encore_entry_script_tags('catalog_paginator') }}
+    {{ encore_entry_script_tags('catalog_clear') }}
+    {{ parent() }}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('catalog_filter') }}
+    {{ parent() }}
+{% endblock %}
+
+{% block content %}
+    <div id="live-catalog-container-{{ id }}"
+         class="--live-catalog-container live-catalog-container container content-body">
+        <h2>{{ tableHeading }}</h2>
+        <form id="--live-catalog-filter" action="{{ requestIndexRoute }}/filter" class="live-catalog-filter"
+              method="POST">
+            {{ filtersCatalog | raw }}
+        </form>
+        <div class="--live-catalog-table-wrap table-responsive ">
+            {{ tableContent | raw }}
+        </div>
+        <div class="--live-catalog-paginbar">
+            {{ tablePaginbar | raw }}
+        </div>
+        {% include 'catalog/loader.twig' with {class: 'd-none'} %}
+    </div>
+{% endblock %}

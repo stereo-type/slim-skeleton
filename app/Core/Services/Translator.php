@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace App\Core\Services;
 
-class Translator
+readonly class Translator
 {
     private string $language;
     private array $translations;
@@ -23,7 +23,7 @@ class Translator
     private function loadTranslations(): void
     {
         // Загружаем переводы из соответствующего файла
-        $translationFile = LANG_PATH."/{$this->language}.php";
+        $translationFile = LANG_PATH."/$this->language.php";
         if (file_exists($translationFile)) {
             $this->translations = include($translationFile);
         } else {

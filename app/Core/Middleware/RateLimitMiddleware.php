@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Core\Middleware;
 
@@ -12,30 +12,34 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 use Slim\Routing\RouteContext;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 
-class RateLimitMiddleware implements MiddlewareInterface
+readonly class RateLimitMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly ResponseFactoryInterface $responseFactory,
-        private readonly RequestService $requestService,
-        private readonly Config $config,
-        private readonly RateLimiterFactory $rateLimiterFactory
+        private ResponseFactoryInterface $responseFactory,
+        private RequestService $requestService,
+        private Config $config,
+        private RateLimiterFactory $rateLimiterFactory
     ) {
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $clientIp     = $this->requestService->getClientIp($request, $this->config->get('trusted_proxies'));
+        $clientIp = $this->requestService->getClientIp($request, $this->config->get('trusted_proxies'));
         $routeContext = RouteContext::fromRequest($request);
-        $route        = $routeContext->getRoute();
-        $limiter      = $this->rateLimiterFactory->create($route->getName() . '_' . $clientIp);
+        $route = $routeContext->getRoute();
+        if (!is_null($route)) {
+            $limiter = $this->rateLimiterFactory->create($route->getName().'_'.$clientIp);
 
-        if ($limiter->consume()->isAccepted() === false) {
-            return $this->responseFactory->createResponse(ServerStatus::TO_MANY_REQUESTS, 'Too many requests');
+            if ($limiter->consume()->isAccepted() === false) {
+                return $this->responseFactory->createResponse(ServerStatus::TO_MANY_REQUESTS, 'Too many requests');
+            }
+
+            return $handler->handle($request);
         }
-
-        return $handler->handle($request);
+        throw new RuntimeException('Route not found');
     }
 }

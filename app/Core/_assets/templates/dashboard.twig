@@ -1,0 +1,30 @@
+{% extends 'layout.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block title %}{{ translate('dashboard') }}{% endblock %}
+
+{% block content %}
+    <div class="dashboard">
+        <div class="top-container mb-4 row g-0 rounded-4">
+        </div>
+        <div class="categories-container row">
+            {% for spendingCategory in topSpendingCategories %}
+                <div class="col">
+                    <div class="category-card p-4 text-center d-flex align-items-center justify-content-center">
+                        <div>
+                            <h6 class="fs-6 fw-normal">{{ spendingCategory.name }}</h6>
+                            <h1 class="fs-1 text-danger text-opacity-75">${{ spendingCategory.total }}</h1>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

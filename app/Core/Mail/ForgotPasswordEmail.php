@@ -4,23 +4,27 @@ declare(strict_types = 1);
 
 namespace App\Core\Mail;
 
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\BodyRendererInterface;
 use App\Core\Config;
 use App\Core\Entity\PasswordReset;
 use App\Core\SignedUrl;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\BodyRendererInterface;
 
-class ForgotPasswordEmail
+readonly class ForgotPasswordEmail
 {
     public function __construct(
-        private readonly Config $config,
-        private readonly MailerInterface $mailer,
-        private readonly BodyRendererInterface $renderer,
-        private readonly SignedUrl $signedUrl
+        private Config $config,
+        private MailerInterface $mailer,
+        private BodyRendererInterface $renderer,
+        private SignedUrl $signedUrl
     ) {
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     */
     public function send(PasswordReset $passwordReset): void
     {
         $email   = $passwordReset->getEmail();
@@ -32,7 +36,7 @@ class ForgotPasswordEmail
         $message = (new TemplatedEmail())
             ->from($this->config->get('mailer.from'))
             ->to($email)
-            ->subject('Your Expennies Password Reset Instructions')
+            ->subject('Your Password Reset Instructions')
             ->htmlTemplate('emails/password_reset.html.twig')
             ->context(
                 [

@@ -15,23 +15,38 @@ use App\Core\Services\PasswordResetService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 
-class PasswordResetController
+readonly class PasswordResetController
 {
     public function __construct(
-        private readonly Twig $twig,
-        private readonly RequestValidatorFactoryInterface $requestValidatorFactory,
-        private readonly UserProviderServiceInterface $userProviderService,
-        private readonly PasswordResetService $passwordResetService,
-        private readonly ForgotPasswordEmail $forgotPasswordEmail
+        private Twig $twig,
+        private RequestValidatorFactoryInterface $requestValidatorFactory,
+        private UserProviderServiceInterface $userProviderService,
+        private PasswordResetService $passwordResetService,
+        private ForgotPasswordEmail $forgotPasswordEmail
     ) {
     }
 
+    /**
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws LoaderError
+     */
     public function showForgotPasswordForm(Response $response): Response
     {
         return $this->twig->render($response, 'auth/forgot_password.twig');
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     * @throws Exception
+     */
     public function handleForgotPasswordRequest(Request $request, Response $response): Response
     {
         $data = $this->requestValidatorFactory->make(ForgotPasswordRequestValidator::class)->validate(
@@ -51,6 +66,12 @@ class PasswordResetController
         return $response;
     }
 
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws LoaderError
+     * @throws NonUniqueResultException
+     */
     public function showResetPasswordForm(Response $response, array $args): Response
     {
         $passwordReset = $this->passwordResetService->findByToken($args['token']);
@@ -62,6 +83,13 @@ class PasswordResetController
         return $this->twig->render($response, 'auth/reset_password.twig', ['token' => $args['token']]);
     }
 
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws NonUniqueResultException
+     */
     public function resetPassword(Request $request, Response $response, array $args): Response
     {
         $data = $this->requestValidatorFactory->make(ResetPasswordRequestValidator::class)->validate(

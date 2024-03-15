@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Filters;
 
-use App\Core\Contracts\User\OwnableInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
+use App\Core\Contracts\User\OwnableInterface;
 
 class UserFilter extends SQLFilter
 {

@@ -8,21 +8,27 @@ use App\Core\Contracts\EntityManagerServiceInterface;
 use App\Core\Contracts\User\UserProviderServiceInterface;
 use App\Core\Entity\PasswordReset;
 use App\Core\Entity\User;
+use DateTime;
+use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 
-class PasswordResetService
+readonly class PasswordResetService
 {
     public function __construct(
-        private readonly EntityManagerServiceInterface $entityManagerService,
-        private readonly UserProviderServiceInterface $userProviderService
+        private EntityManagerServiceInterface $entityManagerService,
+        private UserProviderServiceInterface $userProviderService
     ) {
     }
 
+    /**
+     * @throws Exception
+     */
     public function generate(string $email): PasswordReset
     {
         $passwordReset = new PasswordReset();
 
         $passwordReset->setToken(bin2hex(random_bytes(32)));
-        $passwordReset->setExpiration(new \DateTime('+30 minutes'));
+        $passwordReset->setExpiration(new DateTime('+30 minutes'));
         $passwordReset->setEmail($email);
 
         $this->entityManagerService->sync($passwordReset);
@@ -44,6 +50,9 @@ class PasswordResetService
             ->execute();
     }
 
+    /**
+     * @throws NonUniqueResultException
+     */
     public function findByToken(string $token): ?PasswordReset
     {
         return $this->entityManagerService
@@ -57,7 +66,7 @@ class PasswordResetService
                 [
                     'token'  => $token,
                     'active' => true,
-                    'now'    => new \DateTime(),
+                    'now'    => new DateTime(),
                 ]
             )
             ->getQuery()

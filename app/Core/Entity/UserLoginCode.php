@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Core\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -24,7 +25,7 @@ class UserLoginCode
     private bool $isActive;
 
     #[Column]
-    private \DateTime $expiration;
+    private DateTime $expiration;
 
     #[ManyToOne]
     private User $user;
@@ -63,12 +64,12 @@ class UserLoginCode
         return $this;
     }
 
-    public function getExpiration(): \DateTime
+    public function getExpiration(): DateTime
     {
         return $this->expiration;
     }
 
-    public function setExpiration(\DateTime $expiration): UserLoginCode
+    public function setExpiration(DateTime $expiration): UserLoginCode
     {
         $this->expiration = $expiration;
 

@@ -4,15 +4,16 @@ declare(strict_types = 1);
 
 namespace App\Core\Middleware;
 
-use App\Core\Config;
+use RuntimeException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use App\Core\Config;
 
-class ValidateSignatureMiddleware implements MiddlewareInterface
+readonly class ValidateSignatureMiddleware implements MiddlewareInterface
 {
-    public function __construct(private readonly Config $config)
+    public function __construct(private Config $config)
     {
     }
 
@@ -29,7 +30,7 @@ class ValidateSignatureMiddleware implements MiddlewareInterface
         $signature = hash_hmac('sha256', $url, $this->config->get('app_key'));
 
         if ($expiration <= time() || ! hash_equals($signature, $originalSignature)) {
-            throw new \RuntimeException('Failed to verify signature');
+            throw new RuntimeException('Failed to verify signature');
         }
 
         return $handler->handle($request);

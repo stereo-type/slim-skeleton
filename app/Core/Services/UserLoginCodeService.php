@@ -7,13 +7,18 @@ namespace App\Core\Services;
 use App\Core\Contracts\EntityManagerServiceInterface;
 use App\Core\Entity\User;
 use App\Core\Entity\UserLoginCode;
+use DateTime;
+use Exception;
 
-class UserLoginCodeService
+readonly class UserLoginCodeService
 {
-    public function __construct(private readonly EntityManagerServiceInterface $entityManagerService)
+    public function __construct(private EntityManagerServiceInterface $entityManagerService)
     {
     }
 
+    /**
+     * @throws Exception
+     */
     public function generate(User $user): UserLoginCode
     {
         $userLoginCode = new UserLoginCode();
@@ -21,7 +26,7 @@ class UserLoginCodeService
         $code = random_int(100000, 999999);
 
         $userLoginCode->setCode((string) $code);
-        $userLoginCode->setExpiration(new \DateTime('+10 minutes'));
+        $userLoginCode->setExpiration(new DateTime('+10 minutes'));
         $userLoginCode->setUser($user);
 
         $this->entityManagerService->sync($userLoginCode);
@@ -39,7 +44,7 @@ class UserLoginCodeService
             return false;
         }
 
-        if ($userLoginCode->getExpiration() <= new \DateTime()) {
+        if ($userLoginCode->getExpiration() <= new DateTime()) {
             return false;
         }
 

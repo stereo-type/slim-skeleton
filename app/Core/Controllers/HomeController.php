@@ -4,45 +4,41 @@ declare(strict_types = 1);
 
 namespace App\Core\Controllers;
 
-use App\Core\ResponseFormatter;
-use App\Core\Services\CategoryService;
-use App\Core\Services\TransactionService;
+use DateTime;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
-class HomeController
+readonly class HomeController
 {
     public function __construct(
-        private readonly Twig $twig,
-        private readonly TransactionService $transactionService,
-        private readonly CategoryService $categoryService,
-        private readonly ResponseFormatter $responseFormatter
+        private Twig $twig,
     ) {
     }
 
+    /**
+     * @param  Response  $response
+     * @return Response
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
     public function index(Response $response): Response
     {
-        $startDate             = \DateTime::createFromFormat('Y-m-d', date('Y-m-01'));
-        $endDate               = new \DateTime('now');
-        $totals                = $this->transactionService->getTotals($startDate, $endDate);
-        $recentTransactions    = $this->transactionService->getRecentTransactions(10);
-        $topSpendingCategories = $this->categoryService->getTopSpendingCategories(4);
+//        $startDate             = DateTime::createFromFormat('Y-m-d', date('Y-m-01'));
+//        $endDate               = new DateTime('now');
 
         return $this->twig->render(
             $response,
             'dashboard.twig',
             [
-                'totals'                => $totals,
-                'transactions'          => $recentTransactions,
-                'topSpendingCategories' => $topSpendingCategories,
+                'totals'                => 1,
+                'transactions'          => 1,
+                'topSpendingCategories' => 1,
             ]
         );
     }
 
-    public function getYearToDateStatistics(Response $response): Response
-    {
-        $data = $this->transactionService->getMonthlySummary((int) date('Y'));
-
-        return $this->responseFormatter->asJson($response, $data);
-    }
 }

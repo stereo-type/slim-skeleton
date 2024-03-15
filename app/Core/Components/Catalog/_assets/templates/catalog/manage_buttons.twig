@@ -1,0 +1,14 @@
+<div class="buttons-group">
+{#    {% if edit %}#}
+{#        <button type="button" class="btn btn-primary">{{ translate('edit') }}</button>#}
+{#    {% endif %}#}
+{#    {% if copy %}#}
+{#        <button type="button" class="btn btn-primary">{{ translate('copy') }}</button>#}
+{#    {% endif %}#}
+{#    {% if delete %}#}
+{#        <button type="button" class="btn btn-primary">{{ translate('delete') }}</button>#}
+{#    {% endif %}#}
+    {% for button in buttons%}
+        <button type="button" class="btn {{ button.button_class }}" title="{{ button.name }}" target-id="{{ id }}"><i class="{{ button.icon }}"></i></button>
+    {% endfor %}
+</div>

@@ -3,12 +3,12 @@
 declare(strict_types = 1);
 
 namespace App\Core\DataObjects;
-class UserProfileData
+readonly class UserProfileData
 {
     public function __construct(
-        public readonly string $email,
-        public readonly string $name,
-        public readonly bool $twoFactor
+        public string $email,
+        public string $name,
+        public bool $twoFactor
     ) {
     }
 }

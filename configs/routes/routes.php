@@ -13,5 +13,7 @@ use Slim\App;
 return static function (App $app) {
     $core_router = require CORE_CONFIG_PATH.'/routes.php';
     $core_router($app);
-    /**Добавлять тут свои маршруты*/
+
+    $catalog_router = require APP_PATH.'/Core/Components/Catalog/_configs/routes.php';
+    $catalog_router($app);
 };

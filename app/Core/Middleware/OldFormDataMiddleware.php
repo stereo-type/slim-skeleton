@@ -11,11 +11,11 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Views\Twig;
 
-class OldFormDataMiddleware implements MiddlewareInterface
+readonly class OldFormDataMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly Twig $twig,
-        private readonly SessionInterface $session
+        private Twig $twig,
+        private SessionInterface $session
     ) {
     }
 

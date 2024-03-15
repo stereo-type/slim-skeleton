@@ -9,12 +9,13 @@ use App\Core\Contracts\User\UserInterface;
 use App\Core\Contracts\User\UserProviderServiceInterface;
 use App\Core\DataObjects\RegisterUserData;
 use App\Core\Entity\User;
+use DateTime;
 
-class UserProviderService implements UserProviderServiceInterface
+readonly class UserProviderService implements UserProviderServiceInterface
 {
     public function __construct(
-        private readonly EntityManagerServiceInterface $entityManager,
-        private readonly HashService $hashService
+        private EntityManagerServiceInterface $entityManager,
+        private HashService $hashService
     ) {
     }
 
@@ -43,7 +44,7 @@ class UserProviderService implements UserProviderServiceInterface
 
     public function verifyUser(UserInterface $user): void
     {
-        $user->setVerifiedAt(new \DateTime());
+        $user->setVerifiedAt(new DateTime());
 
         $this->entityManager->sync($user);
     }

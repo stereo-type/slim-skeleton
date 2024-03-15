@@ -1,0 +1,39 @@
+{% if haspages %}
+    <nav aria-label="{{ label }}" class="pagination pagination-centered justify-content-center" >
+        <ul class="pagination mt-3">
+            {% if previous %}
+                <li class="page-item prev">
+                    <a href="{{ previous.url }}" class="page-link">&laquo;</a>
+                </li>
+            {% endif %}
+            {% if first %}
+                <li class="page-item">
+                    <a href="{{ first.url }}" class="page-link">{{ first.page }}</a>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&hellip;</span>
+                </li>
+            {% endif %}
+            {% for page in pages %}
+                <li class="page-item {{ page.active ? 'active' }}">
+                    <a href="{{ page.url ? page.url : '#' }}" class="page-link">
+                        {{ page.page }}
+                    </a>
+                </li>
+            {% endfor %}
+            {% if last %}
+                <li class="page-item disabled">
+                    <span class="page-link">&hellip;</span>
+                </li>
+                <li class="page-item">
+                    <a href="{{ last.url }}" class="page-link">{{ last.page }}</a>
+                </li>
+            {% endif %}
+            {% if next %}
+                <li class="page-item next">
+                    <a href="{{ next.url }}" class="page-link">&raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

@@ -1,0 +1,113 @@
+<style>
+    .btn-bd-primary {
+        --bd-violet-bg: #712cf9;
+        --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+        --bs-btn-font-weight: 600;
+        --bs-btn-color: var(--bs-white);
+        --bs-btn-bg: var(--bd-violet-bg);
+        --bs-btn-border-color: var(--bd-violet-bg);
+        --bs-btn-hover-color: var(--bs-white);
+        --bs-btn-hover-bg: #6528e0;
+        --bs-btn-hover-border-color: #6528e0;
+        --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+        --bs-btn-active-color: var(--bs-btn-hover-color);
+        --bs-btn-active-bg: #5a23c8;
+        --bs-btn-active-border-color: #5a23c8;
+    }
+
+    .bd-mode-toggle .dropdown-menu .active .bi {
+        display: block !important;
+    }
+</style>
+<div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle" id="{{ id }}">
+    <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center" id="bd-theme" type="button"
+            aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (light)">
+        <i class="bi bi-sun-fill me-1"></i>
+        <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text" style="">
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="light"
+                    aria-pressed="true">
+                <i class="bi bi-sun-fill opacity-50 me-2"></i>
+                Light
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark"
+                    aria-pressed="false">
+                <i class="bi bi-moon-stars-fill opacity-50 me-2"></i>
+                Dark
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto"
+                    aria-pressed="false">
+                <i class="bi bi-circle-half opacity-50 me-2"></i>
+                Auto
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+    </ul>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dropdownMenu = document.querySelector('#{{ id }} .dropdown-menu');
+        let selectedValue = localStorage.getItem('{{ id }}_selected_value');
+
+        // Установка выбранного значения из кеша браузера
+        if (selectedValue) {
+            selectedValue = selectedValue.toLowerCase();
+            const selectedElement = dropdownMenu.querySelector('.dropdown-item[data-bs-theme-value="' + selectedValue + '"]');
+
+            if (selectedElement) {
+                const items = dropdownMenu.querySelectorAll('.dropdown-item');
+
+                items.forEach(function (item) {
+                    item.classList.remove('active');
+                });
+
+                selectedElement.classList.add('active');
+
+                if (selectedValue === 'auto') {
+                    document.documentElement.dataset.bsTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                } else {
+                    document.documentElement.dataset.bsTheme = selectedValue;
+                }
+            }
+        }
+
+        dropdownMenu.addEventListener('click', function (event) {
+            if (event.target instanceof Element) {
+                const targetItem = event.target.closest('.dropdown-item');
+
+                if (targetItem) {
+                    const items = dropdownMenu.querySelectorAll('.dropdown-item');
+
+                    items.forEach(function (item) {
+                        item.classList.remove('active');
+                    });
+
+                    targetItem.classList.add('active');
+
+                    const selectedText = targetItem.textContent.trim().toLowerCase();
+                    // dropdownToggle.textContent = selectedText;
+
+                    // Сохранение выбранного значения в кеш браузера
+                    localStorage.setItem('{{ id }}_selected_value', selectedText);
+                    /**Почему-то так при установке значения срабатывает, а при изменении нет**/
+                    // document.documentElement.dataset.bsTheme = selectedValue;
+                    if (selectedText === 'auto') {
+                        const browserTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                        document.querySelector('html').setAttribute('data-bs-theme', browserTheme)
+                    } else {
+                        document.querySelector('html').setAttribute('data-bs-theme', selectedText)
+                    }
+                }
+            }
+        });
+    });
+</script>

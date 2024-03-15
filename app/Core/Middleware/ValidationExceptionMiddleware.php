@@ -15,13 +15,13 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class ValidationExceptionMiddleware implements MiddlewareInterface
+readonly class ValidationExceptionMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly ResponseFactoryInterface $responseFactory,
-        private readonly SessionInterface $session,
-        private readonly RequestService $requestService,
-        private readonly ResponseFormatter $responseFormatter
+        private ResponseFactoryInterface $responseFactory,
+        private SessionInterface $session,
+        private RequestService $requestService,
+        private ResponseFormatter $responseFormatter
     ) {
     }
 
@@ -32,7 +32,7 @@ class ValidationExceptionMiddleware implements MiddlewareInterface
         } catch (ValidationException $e) {
             $response = $this->responseFactory->createResponse();
 
-            if ($this->requestService->isXhr($request)) {
+            if ($this->requestService->isAjax($request)) {
                 return $this->responseFormatter->asJson($response->withStatus(ServerStatus::VALIDATION_ERROR), $e->errors);
             }
 

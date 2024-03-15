@@ -8,9 +8,9 @@ use App\Core\Contracts\SessionInterface;
 use App\Core\DataObjects\SessionConfig;
 use App\Core\Exception\SessionException;
 
-class Session implements SessionInterface
+readonly class Session implements SessionInterface
 {
-    public function __construct(private readonly SessionConfig $options)
+    public function __construct(private SessionConfig $options)
     {
     }
 
