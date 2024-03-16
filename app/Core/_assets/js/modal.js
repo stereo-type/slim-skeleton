@@ -90,4 +90,5 @@ const modal = function (content) {
 
 export {
     modal,
+    ModalTemplate,
 }
