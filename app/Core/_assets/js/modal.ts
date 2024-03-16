@@ -9,9 +9,9 @@ class ModalTemplate {
         if (data instanceof ModalTemplate) {
             return data;
         }
-        if(typeof data === 'string') {
+        if (typeof data === 'string') {
             data = {
-
+                'modalContent': data
             };
         }
 
