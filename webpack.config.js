@@ -4,7 +4,7 @@ const path = require('path');
 
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
 // It's useful when you use tools that rely on webpack.config.js file.
-if (! Encore.isRuntimeEnvironmentConfigured()) {
+if (!Encore.isRuntimeEnvironmentConfigured()) {
     Encore.configureRuntimeEnvironment(process.env.NODE_ENV || "dev")
 }
 
@@ -16,9 +16,9 @@ const projectResourcesPath = path.join(__dirname, 'resources', 'js');
 const addCoreFilesToBuild = (directoryPath) => {
     fs.readdirSync(directoryPath).forEach(file => {
         const filePath = path.join(directoryPath, file);
-        if (fs.statSync(filePath).isFile() && file.endsWith('.js')) {
+        if (fs.statSync(filePath).isFile() && (file.endsWith('.js') || file.endsWith('.ts'))) {
             // Добавляем только файлы JavaScript в качестве точек входа
-            const entryName = path.basename(file, '.js'); // Имя файла без расширения
+            const entryName = path.basename(file, path.extname(file)); // Имя файла без расширения
             Encore.addEntry(entryName, filePath);
         } else if (fs.statSync(filePath).isDirectory()) {
             // Если это директория, рекурсивно добавляем ее содержимое
@@ -36,6 +36,8 @@ Encore
 
     // public path used by the web server to access the output path
     .setPublicPath("/build")
+    .enableTypeScriptLoader()
+    .enableForkedTypeScriptTypesChecking()
 
     /*
      * ENTRY CONFIG
@@ -61,7 +63,7 @@ Encore
      */
     .cleanupOutputBeforeBuild()
     .enableBuildNotifications()
-    .enableSourceMaps(! Encore.isProduction())
+    .enableSourceMaps(!Encore.isProduction())
 
     // enables hashed filenames (e.g. app.abc123.css)
     .enableVersioning()
@@ -73,7 +75,7 @@ Encore
     // enables @babel/preset-env polyfills
     .configureBabelPresetEnv((config) => {
         config.useBuiltIns = "usage"
-        config.corejs      = 3
+        config.corejs = 3
     })
 
     .copyFiles({

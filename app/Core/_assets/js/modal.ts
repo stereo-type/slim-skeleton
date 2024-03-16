@@ -1,40 +1,37 @@
-import "../css/modal.scss"
+import "../css/modal.scss";
 import {post} from "./ajax";
 import {Modal} from 'bootstrap';
 
 /**Model объекта модалки, расширяться будет по мере необходимости*/
 class ModalTemplate {
 
-    static build(data) {
+    static build(data: ModalTemplate | Record<string, any> | string): ModalTemplate {
         if (data instanceof ModalTemplate) {
             return data;
         }
+        if(typeof data === 'string') {
+            data = {
+
+            };
+        }
+
         return ModalTemplate.fromMap(data);
     }
 
     constructor(
-        modalId,
-        modalType = 'html',
-        modalContent,
-        modalTitle = '',
-        modalClasses = ''
+        private modalId: number,
+        private modalType: string = 'html',
+        private modalContent: string,
+        private modalTitle: string = '',
+        private modalClasses: string = ''
     ) {
-        if (modalType !== 'html') {
+        if (this.modalType !== 'html') {
             //TODO
             throw new Error('Пока не поддерживается, задел на получение контента после показа модалки из аякса!');
         }
-        Object.assign(this, {
-            modalId,
-            modalType,
-            modalContent,
-            modalTitle,
-            modalClasses
-        });
     }
 
-
-    static fromMap(map) {
-
+    static fromMap(map: Record<string, any>): ModalTemplate {
         if (typeof map === 'string') {
             map = {'modalContent': map};
         }
@@ -48,23 +45,23 @@ class ModalTemplate {
         );
     }
 
-    toMap() {
-        const obj = {};
+    toMap(): Record<string, any> {
+        const obj: Record<string, any> = {};
         const properties = Object.getOwnPropertyNames(this);
         properties.forEach(property => {
-            obj[property] = this[property];
+            obj[property] = (this as Record<string, any>)[property];
         });
         return obj;
     }
 }
 
-const modal = function (content) {
+const modal = function (content: ModalTemplate | Record<string, any> | string): Promise<void> {
     return post(
         '/modal',
         ModalTemplate.build(content).toMap(),
         null,
         false
-    ).then((response) => {
+    ).then((response: { ok: any; json: () => Promise<any>; }) => {
         if (!response.ok) {
             alert('Ошибка отображения модального окна');
         } else {
@@ -72,7 +69,7 @@ const modal = function (content) {
                 if (data['modal']) {
                     const tempElement = document.createElement('div');
                     tempElement.innerHTML = data['modal'].toString();
-                    const modalWrapper = tempElement.firstChild;
+                    const modalWrapper = tempElement.firstChild as HTMLElement;
                     document.body.appendChild(modalWrapper);
 
                     const modal = new Modal(modalWrapper);
@@ -91,4 +88,4 @@ const modal = function (content) {
 export {
     modal,
     ModalTemplate,
-}
+};
