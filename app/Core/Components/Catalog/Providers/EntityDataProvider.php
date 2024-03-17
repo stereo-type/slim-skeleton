@@ -9,8 +9,6 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Providers;
 
-use App\Core\Config;
-use App\Core\Enum\AppEnvironment;
 use DateTime;
 use Exception;
 use ReflectionClass;
@@ -40,6 +38,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
+use App\Core\Enum\AppEnvironment;
 use App\Core\Services\EntityManagerService;
 use App\Core\Exception\ValidationException;
 use App\Core\Components\Catalog\Enum\FilterType;
@@ -183,7 +182,7 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
         foreach ($this->get_properties() as $key => $prop) {
             if (!in_array($key, $exclude_filters)) {
                 /**TODO сделать поддержку других фильтров*/
-                $filters[] = Filter::create(FilterType::input, $prop, ['placeholder' => $prop]);
+                $filters[] = Filter::create(FilterType::input, $key, ['placeholder' => $prop]);
             }
         }
 

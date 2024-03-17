@@ -184,7 +184,10 @@ abstract class CatalogController
 
         $current_filters = $filters->getValues();
         $cached_filters = static::USE_CACHE ? $this->get_filters_from_cache() : [];
-        $filter_diff = array_diff_assoc($current_filters, $cached_filters);
+        $filter_diff = array_merge(
+            array_diff_assoc($current_filters, $cached_filters),
+            array_diff_assoc($cached_filters, $current_filters)
+        );
         $filter_changed = !empty($filter_diff);
         if ($filter_changed) {
             /**Если изменена не только страница, а какие то фильтра, то необходимо сбросить страницу на 0*/
