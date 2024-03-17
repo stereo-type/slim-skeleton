@@ -89,12 +89,6 @@ abstract class EntityCatalogController extends CatalogController
     }
 
 
-    private function request_slim_to_symfony(SlimRequest $req): SymfonyRequest
-    {
-        return $this->requestConvertor->requestSlimToSymfony($req);
-    }
-
-
     /**
      * @param SlimRequest $request
      * @param Response $response
@@ -110,7 +104,7 @@ abstract class EntityCatalogController extends CatalogController
         }
 
         $form = $this->dataProvider->build_form();
-        $form->handleRequest($this->request_slim_to_symfony($request));
+        $form->handleRequest($this->requestConvertor->requestSlimToSymfony($request));
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {

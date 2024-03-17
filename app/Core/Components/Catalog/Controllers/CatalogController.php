@@ -59,6 +59,53 @@ abstract class CatalogController
     ) {
     }
 
+    /**Метод обертка для упрощенного биднига в контейнере
+     * @param string $className
+     * @param TableQueryParams|null $params
+     * @return mixed
+     */
+    public static function binding(string $className, ?TableQueryParams $params = null): array
+    {
+        return [
+            static::class => static function (ContainerInterface $container) use ($className, $params) {
+                $provider = new $className($container->get(EntityManagerInterface::class), $container, $params);
+                $implements = class_implements($provider);
+                if (!in_array(CatalogDataProviderInterface::class, $implements) || !in_array(
+                        CatalogFilterInterface::class,
+                        $implements
+                    )) {
+                    throw new InvalidArgumentException(
+                        "Class $className must implements CatalogDataProviderInterface && CatalogFilterInterface"
+                    );
+                }
+                return new static(
+                    $provider,
+                    $container->get(Twig::class),
+                    $container->get(ResponseFormatter::class),
+                    $container->get(SessionInterface::class)
+                );
+            }
+        ];
+    }
+
+    public static function routing(App $app, string $route): void
+    {
+        if (stripos($route, '/') !== 0) {
+            $route = '/' . $route;
+        }
+        $reportName = substr($route, 1);
+        $class = static::class;
+        $method = 'additional_routes';
+        $app->group($route, function (RouteCollectorProxy $collectorProxy) use ($class, $reportName, $method) {
+            $collectorProxy->get('', [$class, 'index'])->setName($reportName);
+            $collectorProxy->post('/filter', [$class, 'filter']);
+            $class::$method($collectorProxy);
+        })->add(AuthMiddleware::class);
+    }
+
+    protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
+    {
+    }
 
     /**Метод получения названия таблицы, используется в качестве заголовка
      * @return string
@@ -91,7 +138,7 @@ abstract class CatalogController
      * @throws SyntaxError
      * @throws Exception
      */
-    final public function index(Request $request, Response $response): Response
+    public function index(Request $request, Response $response): Response
     {
         /**Post+Get*/
         $data = array_merge((array)($request->getParsedBody() ?? []), $request->getQueryParams());
@@ -129,7 +176,7 @@ abstract class CatalogController
      * @throws NotFoundExceptionInterface
      * @throws Exception
      */
-    final public function filter(Request $request, Response $response): Response
+    public function filter(Request $request, Response $response): Response
     {
         /**Post+Get*/
         $data = array_merge((array)($request->getParsedBody() ?? []), $request->getQueryParams());
@@ -176,6 +223,7 @@ abstract class CatalogController
                 $filters->getValues()
             )
         );
+        /**Вычитаем чтоб нумерацию сделать с 1, а не с 0*/
         $tableData = $this->dataProvider->get_table_data($this->twig, $params->copyWith(page: $params->page - 1));
 
         $paginbar = new PagingBar(
@@ -188,58 +236,10 @@ abstract class CatalogController
         return [
             'table'    => $this->dataProvider->get_table($tableData->records, $params),
             'paginbar' => $paginbar,
+            /**Добавляем чтоб нумерацию сделать с 1, а не с 0*/
             'page'     => $tableData->currentPage + 1,
             'per_page' => $tableData->perPage,
         ];
-    }
-
-
-    /**Метод обертка для упрощенного биднига в контейнере
-     * @param string $className
-     * @param TableQueryParams|null $params
-     * @return mixed
-     */
-    public static function binding(string $className, ?TableQueryParams $params = null): array
-    {
-        return [
-            static::class => static function (ContainerInterface $container) use ($className, $params) {
-                $provider = new $className($container->get(EntityManagerInterface::class), $container, $params);
-                $implements = class_implements($provider);
-                if (!in_array(CatalogDataProviderInterface::class, $implements) || !in_array(
-                        CatalogFilterInterface::class,
-                        $implements
-                    )) {
-                    throw new InvalidArgumentException(
-                        "Class $className must implements CatalogDataProviderInterface && CatalogFilterInterface"
-                    );
-                }
-                return new static(
-                    $provider,
-                    $container->get(Twig::class),
-                    $container->get(ResponseFormatter::class),
-                    $container->get(SessionInterface::class)
-                );
-            }
-        ];
-    }
-
-    protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
-    {
-    }
-
-    public static function routing(App $app, string $route): void
-    {
-        if (stripos($route, '/') !== 0) {
-            $route = '/' . $route;
-        }
-        $reportName = substr($route, 1);
-        $class = static::class;
-        $method = 'additional_routes';
-        $app->group($route, function (RouteCollectorProxy $collectorProxy) use ($class, $reportName, $method) {
-            $collectorProxy->get('', [$class, 'index'])->setName($reportName);
-            $collectorProxy->post('/filter', [$class, 'filter']);
-            $class::$method($collectorProxy);
-        })->add(AuthMiddleware::class);
     }
 
     private function _class_cache_key(): string
