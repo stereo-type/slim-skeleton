@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Controllers;
 
-use App\Core\Middleware\AuthMiddleware;
 use Exception;
 use InvalidArgumentException;
 
+use Psr\Http\Message\UriInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-use Psr\Http\Message\UriInterface;
 use Slim\App;
-use Slim\Routing\RouteCollectorProxy;
 use Slim\Views\Twig;
+use Slim\Routing\RouteCollectorProxy;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -26,6 +25,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Core\ResponseFormatter;
 use App\Core\Constants\ServerStatus;
 use App\Core\Contracts\SessionInterface;
+use App\Core\Middleware\AuthMiddleware;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Providers\CatalogFilterInterface;
 use App\Core\Components\Catalog\Providers\CatalogDataProviderInterface;
