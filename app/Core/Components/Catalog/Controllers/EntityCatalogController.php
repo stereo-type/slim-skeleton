@@ -17,7 +17,6 @@ use Twig\Error\SyntaxError;
 use Slim\Views\Twig;
 use Slim\Routing\RouteCollectorProxy;
 use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Doctrine\ORM\EntityManagerInterface;
 
 use App\Core\ResponseFormatter;
