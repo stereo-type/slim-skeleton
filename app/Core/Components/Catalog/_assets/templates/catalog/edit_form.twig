@@ -1,13 +1,6 @@
-{% extends 'layout.twig' %}
-
-{% block javascripts %}
-    {{ parent() }}
-{% endblock %}
-
-
 {% block content %}
     <div class="container content-body">
-        {{ form_start(form) }}
+        {{ form_start(form, {'attr': {'action': form_action, 'id': form_id?? 'entity_form'}}) }}
 
         {{ form_errors(form) }}
 

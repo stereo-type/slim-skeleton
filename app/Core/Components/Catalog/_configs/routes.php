@@ -7,16 +7,16 @@
 
 declare(strict_types=1);
 
-use App\Core\Components\Catalog\Demo\DemoCatalogController;
-use App\Core\Components\Catalog\Demo\DemoUserCatalogController;
+use Slim\App;
 use App\Core\Config;
 use App\Core\Enum\AppEnvironment;
-use Slim\App;
+use App\Core\Components\Catalog\Demo\DemoCatalogController;
+use App\Core\Components\Catalog\Demo\DemoUserCatalogController;
 
 return static function (App $app) {
-    $env = $app->getContainer()?->get(Config::class)->get('app_environment')?? '';
+    $env = $app->getContainer()?->get(Config::class)->get('app_environment') ?? '';
     if (AppEnvironment::isDevelopment($env)) {
-        DemoCatalogController::routing($app, '/demo_categories');
-        DemoUserCatalogController::routing($app, '/demo_user_categories');
+        DemoCatalogController::routing($app);
+        DemoUserCatalogController::routing($app);
     }
 };

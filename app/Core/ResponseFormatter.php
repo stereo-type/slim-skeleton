@@ -1,13 +1,24 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Core;
 
+use Exception;
 use Psr\Http\Message\ResponseInterface;
 
-class ResponseFormatter
+use Slim\Views\Twig;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+
+readonly class ResponseFormatter
 {
+
+    public function __construct(private Twig $twig)
+    {
+    }
+
     public function asJson(
         ResponseInterface $response,
         mixed $data,
@@ -20,15 +31,59 @@ class ResponseFormatter
         return $response;
     }
 
-    public function asDataTable(ResponseInterface $response, array $data, int $draw, int $total): ResponseInterface
+    /**
+     * @param array $body
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
+    public function asJsonModal(ResponseInterface $response, array $body): ResponseInterface
     {
-        return $this->asJson(
-            $response,
+        $modal = $this->_modal($body);
+        return $this->asJson($response, ['modal' => $modal]);
+    }
+
+    /**
+     * @param array $body
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
+    public function asModal(ResponseInterface $response, array $body): ResponseInterface
+    {
+        $modal = $this->_modal($body);
+        $response->getBody()->write($modal);
+        return $response;
+    }
+
+
+    /**
+     * @param array $body
+     * @return string
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
+     */
+    private function _modal(array $body): string
+    {
+        $params = $body['params'] ?? [];
+        $modalTitle = $params['modalTitle'] ?? '';
+        $modalClass = $params['modalClasses'] ?? '';
+        $modalActionType = $params['modalActionType'] ?? 'none';
+
+        return $this->twig->fetch(
+            'modal.twig',
             [
-                'data'            => $data,
-                'draw'            => $draw,
-                'recordsTotal'    => $total,
-                'recordsFiltered' => $total,
+                'modalId'         => $body['modalId'] ?? random_int(0, 1000),
+                'modalContent'    => $body['modalContent'] ?? '',
+                'modalTitle'      => $modalTitle,
+                'modalClass'      => $modalClass,
+                'modalActionType' => $modalActionType,
             ]
         );
     }

@@ -33,8 +33,8 @@ class DemoUserCatalogController extends EntityCatalogController
         return 'Демо таблица Entity';
     }
 
-    public function get_index_route(): string
+    public static function get_index_route(): string
     {
-       return '/demo_user_categories';
+       return '/demo_user_entities';
     }
 }

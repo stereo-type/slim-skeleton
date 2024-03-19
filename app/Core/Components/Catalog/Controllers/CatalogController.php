@@ -26,6 +26,7 @@ use App\Core\ResponseFormatter;
 use App\Core\Constants\ServerStatus;
 use App\Core\Contracts\SessionInterface;
 use App\Core\Middleware\AuthMiddleware;
+use App\Core\Middleware\EntityFormRequestMiddleware;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Providers\CatalogFilterInterface;
 use App\Core\Components\Catalog\Providers\CatalogDataProviderInterface;
@@ -51,12 +52,25 @@ abstract class CatalogController
     /**Использовать ли кеширование*/
     public const USE_CACHE = true;
 
+    protected readonly Twig $twig;
+
+    protected readonly SessionInterface $session;
+    protected readonly ResponseFormatter $responseFormatter;
+
+
+    /**
+     * @param CatalogDataProviderInterface&CatalogFilterInterface $dataProvider
+     * @param ContainerInterface $container
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function __construct(
         protected readonly CatalogDataProviderInterface & CatalogFilterInterface $dataProvider,
-        protected readonly Twig $twig,
-        protected readonly ResponseFormatter $responseFormatter,
-        protected readonly SessionInterface $session,
+        protected readonly ContainerInterface $container,
     ) {
+        $this->twig = $container->get(Twig::class);
+        $this->session = $container->get(SessionInterface::class);
+        $this->responseFormatter = $container->get(ResponseFormatter::class);
     }
 
     /**Метод обертка для упрощенного биднига в контейнере
@@ -70,37 +84,31 @@ abstract class CatalogController
             static::class => static function (ContainerInterface $container) use ($className, $params) {
                 $provider = new $className($container->get(EntityManagerInterface::class), $container, $params);
                 $implements = class_implements($provider);
-                if (!in_array(CatalogDataProviderInterface::class, $implements) || !in_array(
-                        CatalogFilterInterface::class,
-                        $implements
-                    )) {
+                if (!in_array(CatalogDataProviderInterface::class, $implements) ||
+                    !in_array(CatalogFilterInterface::class, $implements)) {
                     throw new InvalidArgumentException(
                         "Class $className must implements CatalogDataProviderInterface && CatalogFilterInterface"
                     );
                 }
-                return new static(
-                    $provider,
-                    $container->get(Twig::class),
-                    $container->get(ResponseFormatter::class),
-                    $container->get(SessionInterface::class)
-                );
+                return new static($provider, $container);
             }
         ];
     }
 
-    public static function routing(App $app, string $route): void
+    public static function routing(App $app, ?string $route = null): void
     {
+        $class = static::class;
+        $route = $route ?? $class::get_index_route();
         if (stripos($route, '/') !== 0) {
             $route = '/' . $route;
         }
         $reportName = substr($route, 1);
-        $class = static::class;
         $method = 'additional_routes';
         $app->group($route, function (RouteCollectorProxy $collectorProxy) use ($class, $reportName, $method) {
             $collectorProxy->get('', [$class, 'index'])->setName($reportName);
             $collectorProxy->post('/filter', [$class, 'filter']);
             $class::$method($collectorProxy);
-        })->add(AuthMiddleware::class);
+        })->add(AuthMiddleware::class)->add(EntityFormRequestMiddleware::class);
     }
 
     protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
@@ -116,7 +124,7 @@ abstract class CatalogController
      * отправка запросов фильтров будет на $this->get_index_route().'/filter'
      * @return string
      */
-    abstract protected function get_index_route(): string;
+    abstract public static function get_index_route(): string;
 
 
     /**Получение id таблицы, по умолчанию - hash от имени класса

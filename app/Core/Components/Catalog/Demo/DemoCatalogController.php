@@ -32,8 +32,8 @@ class DemoCatalogController extends CatalogController
         return 'Демо таблица';
     }
 
-    public function get_index_route(): string
+    public static function get_index_route(): string
     {
-       return '/demo_categories';
+        return '/demo_categories';
     }
 }
