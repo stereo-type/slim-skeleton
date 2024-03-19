@@ -12,12 +12,21 @@ window.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData(form);
 
-        post(form.action, formData, form).then(response => response.json()).then(response => {
+        post(form.action, formData, form).then(function (response) {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('error auth');
+            }
+        ).then(response => {
             if (response['two_factor']) {
                 twoFactorAuthModal.show();
             } else {
                 window.location.href = '/';
             }
+        }).catch(error => {
+            /**Ошибки уже обработаны**/
+            // console.log(error);
         });
     });
 
