@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Middleware;
 
+use Throwable;
+
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -37,20 +39,29 @@ readonly class EntityFormRequestMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $path = explode('/', $request->getUri()->getPath());
-        $last = end($path);
-        if ($last === 'form') {
+        if (in_array('form', $path, true)) {
             if ($this->requestService->isAjax($request)) {
-                $body = $handler->handle($request)->getBody();
-                $requestBody = (array)$request->getParsedBody();
-                $body->rewind();
-                $form = trim($body->getContents());
-                return $this->responseFormatter->asJsonModal(
-                    $this->responseFactory->createResponse(),
-                    [
-                        'modalContent' => $form,
-                        'params'       => $requestBody['params']
-                    ]
-                );
+                try {
+                    $body = $handler->handle($request)->getBody();
+                    $requestBody = (array)$request->getParsedBody();
+                    $body->rewind();
+                    $form = trim($body->getContents());
+                    return $this->responseFormatter->asJsonModal(
+                        $this->responseFactory->createResponse(),
+                        [
+                            'modalContent' => $form,
+                            'params'       => $requestBody['params']
+                        ]
+                    );
+                } catch (Throwable $e) {
+                    return $this->responseFormatter->asJsonModal(
+                        $this->responseFactory->createResponse(),
+                        [
+                            'modalContent' => '<div class="alert alert-danger">' . $e->getMessage() . '</div>',
+                            'params'       => ['modalTitle' => 'Ошибка']
+                        ]
+                    );
+                }
             }
         }
         return $handler->handle($request);

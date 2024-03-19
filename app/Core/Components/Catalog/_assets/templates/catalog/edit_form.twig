@@ -28,7 +28,8 @@
             <div class="mb-3">
                 {{ form_label(child, '', {'label_attr' : {'class' : 'form-label'}}) }}
 
-                {% set _value = old[form.vars.name][child.vars.name] ?? null %}
+                {% set _value = (old[form.vars.name][child.vars.name] is defined) ?
+                    old[form.vars.name][child.vars.name] : child.vars.value ?? null %}
                 {% set attributes = child.vars.attr.class|default('') %}
                 {% if attributes is not defined  or 'not-form-control' not in attributes|split(' ') %}
                     {{ form_widget(child, {'attr' : {'class' : 'form-control', 'value' : _value}}) }}

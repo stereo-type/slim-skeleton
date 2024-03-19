@@ -50,15 +50,18 @@ class DemoUserDataProvider extends EntityDataProvider
     }
 
     /**
-     * @param mixed $data
-     * @return mixed
+     * @param object $instance
+     * @return void
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function before_save(mixed $data): mixed
+    public function before_save(object $instance): void
     {
-        $data->setPassword($this->container->get(HashService::class)->hashPassword($data->getPassword()));
-        return $data;
+        $instance->setPassword($this->container->get(HashService::class)->hashPassword($instance->getPassword()));
+    }
+
+    public function before_set(object $instance): void {
+        $instance->setPassword('');
     }
 
 

@@ -1,4 +1,4 @@
-import { modal, ModalTemplate } from "./modal";
+import {modal} from "./modal";
 import config from "./config";
 
 const SERVER_ERROR_VALIDATION = 422;
@@ -12,7 +12,12 @@ declare global {
 Promise.prototype.aggregate = async function (domElement: HTMLElement | null = null): Promise<Response> {
     const response = await this as Response;
     if (domElement) {
+
         clearValidationErrors(domElement);
+        const modalBody = domElement.closest('.modal-body') as HTMLElement | null;
+        if (modalBody) {
+            clearValidationErrors(modalBody);
+        }
     }
     if (!response.ok) {
         if (response.status === SERVER_ERROR_VALIDATION) {
@@ -72,7 +77,7 @@ function ajax(url: string, method: string = 'get', data: FormData | Record<strin
     const csrfMethods = new Set(['post', 'put', 'delete', 'patch']);
 
     if (csrfMethods.has(method)) {
-        let additionalFields: Record<string, any> = { ...getCsrfFields() };
+        let additionalFields: Record<string, any> = {...getCsrfFields()};
 
         if (method !== 'post') {
             options.method = 'post';
@@ -81,14 +86,16 @@ function ajax(url: string, method: string = 'get', data: FormData | Record<strin
 
         if (data instanceof FormData) {
             for (const additionalField in additionalFields) {
-                data.append(additionalField, additionalFields[additionalField]);
+                if (!data.has(additionalField)) {
+                    data.append(additionalField, additionalFields[additionalField]);
+                }
             }
 
             delete (options.headers as Record<string, string>)['Content-Type'];
 
             options.body = data;
         } else {
-            options.body = JSON.stringify({ ...data, ...additionalFields });
+            options.body = JSON.stringify({...data, ...additionalFields});
         }
     } else if (method === 'get') {
         url += '?' + (new URLSearchParams(data as Record<string, string>)).toString();
@@ -116,20 +123,40 @@ function del(url: string, data: Record<string, string> = {}): Promise<Response> 
 
 function handleValidationErrors(errors: Record<string, any>, domElement: HTMLElement | null) {
     try {
-        for (const name in errors) {
-            const element = domElement?.querySelector(`[name="${name}"]`);
+        if (domElement) {
+            const formName = domElement.getAttribute('name') ?? null;
+            for (const name in errors) {
+                const formElementName = formName === null ? name : `${formName}[${name}]`;
+                const element = domElement.querySelector(`[name="${formElementName}"]`) as HTMLElement | null;
+                const errorDiv = document.createElement('div');
 
-            element?.classList.add('is-invalid');
+                errorDiv.classList.add('invalid-feedback');
+                errorDiv.textContent = typeof errors[name] === 'string' ? errors[name] : errors[name][0];
 
-            const errorDiv = document.createElement('div');
+                if (element) {
+                    element.classList.add('is-invalid');
+                    element.parentNode?.append(errorDiv);
+                } else {
+                    const modalBody = domElement.closest('.modal-body');
+                    const stub = document.createElement('div');
+                    const attr = document.createAttribute('id');
 
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = errors[name][0];
+                    attr.value = 'common-error-container';
+                    stub.classList.add('is-invalid');
+                    stub.attributes.setNamedItem(attr);
 
-            element?.parentNode?.append(errorDiv);
+                    errorDiv.classList.add('px-3');
+                    errorDiv.classList.add('my-2');
+
+                    modalBody.prepend(errorDiv);
+                    modalBody.prepend(stub);
+                }
+            }
+        } else {
+            throw new Error('not domElement');
         }
     } catch (_) {
-        console.log('not found form elements');
+        console.error('not found form elements', _);
     }
 }
 
