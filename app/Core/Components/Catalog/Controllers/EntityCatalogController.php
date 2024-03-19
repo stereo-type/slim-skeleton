@@ -14,14 +14,12 @@ use Psr\Http\Message\ServerRequestInterface as SlimRequest;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Slim\Views\Twig;
 use Slim\Routing\RouteCollectorProxy;
 use Symfony\Component\Form\FormFactoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-use App\Core\ResponseFormatter;
+use App\Core\Services\RequestService;
 use App\Core\Constants\ServerStatus;
-use App\Core\Contracts\SessionInterface;
 use App\Core\Services\RequestConvertor;
 use App\Core\Exception\ValidationException;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
@@ -33,16 +31,20 @@ use App\Core\Components\Catalog\Providers\CatalogFormInterface;
 abstract class EntityCatalogController extends CatalogController
 {
 
-    public const FORM_TEMPLATE = 'catalog/edit_form.twig';
+    /***/
+    public const FORM_TEMPLATE = 'catalog/edit_form_layout.twig';
+    public const FORM_TEMPLATE_AJAX = 'catalog/edit_form.twig';
+
+    protected readonly RequestConvertor $requestConvertor;
+    private readonly RequestService $requestService;
 
     public function __construct(
         CatalogDataProviderInterface&CatalogFilterInterface&CatalogFormInterface $dataProvider,
-        Twig $twig,
-        ResponseFormatter $responseFormatter,
-        SessionInterface $session,
-        protected readonly RequestConvertor $requestConvertor
+        ContainerInterface $container,
     ) {
-        parent::__construct($dataProvider, $twig, $responseFormatter, $session);
+        parent::__construct($dataProvider, $container);
+        $this->requestConvertor = $this->container->get(RequestConvertor::class);
+        $this->requestService = $this->container->get(RequestService::class);
     }
 
 
@@ -62,52 +64,50 @@ abstract class EntityCatalogController extends CatalogController
                     $params
                 );
                 $implements = class_implements($provider);
-                if (!in_array(CatalogDataProviderInterface::class, $implements) || !in_array(
-                        CatalogFilterInterface::class,
-                        $implements
-                    )) {
+                if (!in_array(CatalogDataProviderInterface::class, $implements) ||
+                    !in_array(CatalogFilterInterface::class, $implements)) {
                     throw new InvalidArgumentException(
                         "Class $className must implements CatalogDataProviderInterface && CatalogFilterInterface"
                     );
                 }
-                return new static(
-                    $provider,
-                    $container->get(Twig::class),
-                    $container->get(ResponseFormatter::class),
-                    $container->get(SessionInterface::class),
-                    $container->get(RequestConvertor::class),
-                );
+                return new static($provider, $container);
             }
         ];
     }
 
     protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
     {
-        $collectorProxy->get('/form', [static::class, 'form']);
-        $collectorProxy->post('/form', [static::class, 'form']);
+        $collectorProxy->get('/form/{id}', [static::class, 'form']);
+        $collectorProxy->post('/form/{id}', [static::class, 'form']);
     }
 
 
     /**
      * @param SlimRequest $request
      * @param Response $response
+     * @param array $args
      * @return Response
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function form(Request $request, Response $response): Response
+    public function form(Request $request, Response $response, array $args): Response
     {
         if (!($this->dataProvider instanceof CatalogFormInterface)) {
             throw new InvalidArgumentException('DataProvider must implements CatalogFormInterface');
         }
+        $form = $this->dataProvider->build_form($args);
 
-        $form = $this->dataProvider->build_form();
         $form->handleRequest($this->requestConvertor->requestSlimToSymfony($request));
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                $this->dataProvider->save_form_data($form->getData());
+                $success = $this->dataProvider->save_form_data($form->getData());
+
+                if ($this->requestService->isAjax($request)) {
+                    return $this->responseFormatter->asJson($response, ['success' => $success]);
+                }
+
                 return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::REDIRECT);
             } else {
                 $errors = [];
@@ -118,7 +118,13 @@ abstract class EntityCatalogController extends CatalogController
             }
         }
 
-        return $this->twig->render($response, static::FORM_TEMPLATE, ['form' => $form->createView()]);
+        $template = $this->requestService->isAjax($request) ? static::FORM_TEMPLATE_AJAX : static::FORM_TEMPLATE;
+
+        return $this->twig->render(
+            $response,
+            $template,
+            ['form' => $form->createView(), 'form_action' => (string)$request->getUri()->getPath()]
+        );
     }
 
 

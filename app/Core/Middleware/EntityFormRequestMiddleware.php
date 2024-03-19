@@ -39,7 +39,10 @@ readonly class EntityFormRequestMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $path = explode('/', $request->getUri()->getPath());
-        if (in_array('form', $path, true)) {
+        $body = $request->getParsedBody();
+        $fromModal = $body['formParams']['modal']?? false;
+        /**При сабмите не проходим эту цепочку*/
+        if (in_array('form', $path, true) && $fromModal) {
             if ($this->requestService->isAjax($request)) {
                 try {
                     $body = $handler->handle($request)->getBody();

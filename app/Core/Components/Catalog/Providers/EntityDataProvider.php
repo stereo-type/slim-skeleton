@@ -11,6 +11,7 @@ namespace App\Core\Components\Catalog\Providers;
 
 use DateTime;
 use Exception;
+use Throwable;
 use ReflectionClass;
 use InvalidArgumentException;
 
@@ -19,9 +20,6 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 use Slim\Views\Twig;
-use Symfony\Component\Form\Extension\Core\Type\ButtonType;
-use Symfony\Component\Form\FormBuilderInterface;
-
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -29,14 +27,18 @@ use Twig\Error\SyntaxError;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\Common\Collections\Expr\Comparison;
 
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 
 use App\Core\Enum\AppEnvironment;
 use App\Core\Services\EntityManagerService;
@@ -256,25 +258,33 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
             ])
             ->get('form_actions')
             ->add('cancel', ButtonType::class, [
-                'label' => 'Cancel',
+                'label' => 'Отмена',
                 'attr'  =>
                     [
-                        'class' =>
-                            'form-group btn text-light-emphasis bg-light-subtle border-light-subtle form-control mr-3 '
+                        'class'  =>
+                            'form-group btn text-light-emphasis bg-light-subtle border-light-subtle form-control mr-3 ',
+                        'action' => 'cancel',
                     ],
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Submit',
+                'label' => 'Сохранить',
                 'attr'  =>
                     [
-                        'class' =>
-                            'form-group btn text-primary-emphasis bg-primary-subtle border-primary-subtle form-control'
+                        'class'  =>
+                            'form-group btn text-primary-emphasis bg-primary-subtle border-primary-subtle form-control',
+                        'action' => 'submit',
                     ],
             ]);
     }
 
 
-    public function build_form(): FormInterface
+    /**
+     * @param array $args
+     * @return FormInterface
+     * @throws EntityNotFoundException
+     * @throws NotSupported
+     */
+    public function build_form(array $args): FormInterface
     {
         $formBuilder = $this->formFactory->createNamedBuilder(
             'catalog_entity_builder',
@@ -293,14 +303,14 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
             }
 
             if (!$metadata->isIdentifier($fieldName)) {
-                $options = [];
+                $options = ['attr' => ['placeholder' => ucfirst($fieldName)]];
                 $fieldType = TextType::class;
 
                 if ($metadata->getTypeOfField($fieldName) === 'datetime') {
                     $fieldType = DateType::class;
                     $options = [
-                        'data' => new DateTime(),
-                        'widget' => 'single_text'
+                        'data'   => new DateTime(),
+                        'widget' => 'single_text',
                     ];
                 }
 
@@ -309,39 +319,57 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
         }
 
         $this->form_actions($formBuilder);
+        $form = $formBuilder->getForm();
 
-        return $formBuilder->getForm();
+        $id = (int)($args['id'] ?? 0);
+        if ($id > 0) {
+            $instance = $this->entityManager->getRepository(static::ENTITY_CLASS)->find($id);
+            if (!$instance) {
+                throw new EntityNotFoundException(static::ENTITY_CLASS . ' with ' . $id . ' not found');
+            }
+            $this->before_set($instance);
+            $form->setData($instance);
+            $this->after_set($instance);
+        }
+
+        return $form;
     }
 
 
-    public function before_save(mixed $data): mixed
+    public function before_save(object $instance): void
     {
-        return [];
     }
 
-    public function after_save(mixed $data): mixed
+    public function after_save(object $instance): void
     {
-        return [];
+    }
+
+    public function before_set(object $instance): void
+    {
+    }
+
+    public function after_set(object $instance): void
+    {
     }
 
     /**
      * @param mixed $data
-     * @return void
+     * @return bool
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
-     * @throws Exception
      */
-    public function save_form_data(mixed $data): void
+    public function save_form_data(mixed $data): bool
     {
         try {
             if (get_class($data) === static::ENTITY_CLASS) {
                 $this->before_save($data);
                 $this->container->get(EntityManagerService::class)->sync($data);
                 $this->after_save($data);
+                return true;
             } else {
                 throw new Exception('data must be type ' . static::ENTITY_CLASS);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $message = $e->getMessage();
             if (AppEnvironment::showErrorsDetails($this->container)) {
                 $message .=

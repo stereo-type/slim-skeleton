@@ -15,7 +15,7 @@ interface CatalogFormInterface
 {
     public function build_form(array $args): FormInterface;
 
-    public function save_form_data(mixed $data): void;
+    public function save_form_data(mixed $data): bool;
 
     public function before_save(object $instance): void;
 
