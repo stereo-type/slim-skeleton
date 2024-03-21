@@ -330,6 +330,17 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
             $this->before_set($instance);
             $form->setData($instance);
             $this->after_set($instance);
+        } else {
+            $request = $args['request']['formParams'] ?? [];
+            if (!empty($request['id']) && $request['copy'] ?? false) {
+                $instance = $this->entityManager->getRepository(static::ENTITY_CLASS)->find((int)$request['id']);
+                if (!$instance) {
+                    throw new EntityNotFoundException(static::ENTITY_CLASS . ' with ' . $id . ' not found for copy');
+                }
+                $this->before_set($instance);
+                $form->setData($instance);
+                $this->after_set($instance);
+            }
         }
 
         return $form;
@@ -350,6 +361,23 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
 
     public function after_set(object $instance): void
     {
+    }
+
+    /**
+     * @param int $id
+     * @return bool
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws NotSupported
+     */
+    public function delete(int $id): bool
+    {
+        $instance = $this->entityManager->getRepository(static::ENTITY_CLASS)->find($id);
+        if (!$instance) {
+            return false;
+        }
+        $this->container->get(EntityManagerService::class)->delete($instance, true);
+        return true;
     }
 
     /**

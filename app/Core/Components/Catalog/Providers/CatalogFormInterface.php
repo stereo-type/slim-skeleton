@@ -25,4 +25,6 @@ interface CatalogFormInterface
 
     public function after_set(object $instance): void;
 
+    public function delete(int $id): bool;
+
 }

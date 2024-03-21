@@ -1,9 +1,9 @@
 import '../css/catalog_filter.css';
 
-import { cleanForm, showLoader, dismissLoader, escapeHtml } from "../../../../_assets/js/utils";
-import { post } from "../../../../_assets/js/ajax";
-import { modal } from "../../../../_assets/js/modal";
-import { run_entity_action } from "./catalog_actions";
+import {cleanForm, showLoader, dismissLoader, escapeHtml} from "../../../../_assets/js/utils";
+import {post} from "../../../../_assets/js/ajax";
+import {modal} from "../../../../_assets/js/modal";
+import run_entity_action from "./catalog_actions";
 import config from "../../../../_assets/js/config";
 
 function sendFilterRequest(formElement: HTMLFormElement): void {
@@ -50,39 +50,35 @@ function updateTable(tableContainerElementId: string): void {
 }
 
 function initTable(tableContainerElementId: string): void {
+    const url = window.location.pathname;
     const container = document.getElementById(tableContainerElementId);
-    const filterForm = container?.querySelector<HTMLFormElement>('#--live-catalog-filter');
+    if (!container) return;
+    const filterForm = container.querySelector<HTMLFormElement>('#--live-catalog-filter');
     if (!filterForm) return;
     filterForm.addEventListener('submit', function (event) {
         event.preventDefault(); // Предотвращаем стандартное действие формы
         sendFilterRequest(filterForm!);
     });
 
-    const buttonsGroups = container.querySelectorAll('.--catalog-buttons-group');
 
-    buttonsGroups.forEach(function (buttons) {
-        buttons.addEventListener('click', function (evt) {
-            const target = evt.target as HTMLElement;
-            if (target instanceof Element) {
-                let actionElement = null;
-                if (target.tagName.toLowerCase() === 'i') {
-                    const link = target.closest<HTMLAnchorElement>('a.--catalog-buttons-action');
-                    if (link) {
-                        actionElement = link;
-                    }
-                } else if (target.tagName.toLowerCase() === 'a' && target.classList.contains('--catalog-buttons-action')) {
-                    actionElement = target;
-                }
+    container.addEventListener('click', function (evt) {
+        const target = evt.target as HTMLElement;
+        const actionElement = target.closest('a.--catalog-buttons-action');
+        if (actionElement) {
+            const action = actionElement.getAttribute('action');
+            const id = actionElement.getAttribute('target-id');
+            if (action && id) {
+                run_entity_action(id, action, url, () => updateTable(tableContainerElementId))
+                    ?.then((modal) => {
 
-                if (actionElement) {
-                    const action = actionElement.getAttribute('action');
-                    const id = actionElement.getAttribute('target-id');
-                    if (action && id) {
-                        run_entity_action(id, action);
-                    }
-                }
+                        // modal.getElement().addEventListener('hide.bs.modal', function (evt) {
+                        //     // updateTable(tableContainerElementId);
+                        // });
+                    });
+
+
             }
-        });
+        }
     });
 }
 

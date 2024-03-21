@@ -14,6 +14,7 @@ use Psr\Http\Message\ServerRequestInterface as SlimRequest;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+
 use Slim\Routing\RouteCollectorProxy;
 use Symfony\Component\Form\FormFactoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,7 +32,6 @@ use App\Core\Components\Catalog\Providers\CatalogFormInterface;
 abstract class EntityCatalogController extends CatalogController
 {
 
-    /***/
     public const FORM_TEMPLATE = 'catalog/edit_form_layout.twig';
     public const FORM_TEMPLATE_AJAX = 'catalog/edit_form.twig';
 
@@ -77,8 +77,16 @@ abstract class EntityCatalogController extends CatalogController
 
     protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
     {
+        /**create*/
+        $collectorProxy->get('/form', [static::class, 'form']);
+        $collectorProxy->post('/form', [static::class, 'form']);
+
+        /**edit*/
         $collectorProxy->get('/form/{id}', [static::class, 'form']);
         $collectorProxy->post('/form/{id}', [static::class, 'form']);
+
+        /**delete*/
+        $collectorProxy->delete('/delete/{id}', [static::class, 'delete']);
     }
 
 
@@ -96,6 +104,8 @@ abstract class EntityCatalogController extends CatalogController
         if (!($this->dataProvider instanceof CatalogFormInterface)) {
             throw new InvalidArgumentException('DataProvider must implements CatalogFormInterface');
         }
+
+        $args['request'] = $request->getParsedBody();
         $form = $this->dataProvider->build_form($args);
 
         $form->handleRequest($this->requestConvertor->requestSlimToSymfony($request));
@@ -123,8 +133,27 @@ abstract class EntityCatalogController extends CatalogController
         return $this->twig->render(
             $response,
             $template,
-            ['form' => $form->createView(), 'form_action' => (string)$request->getUri()->getPath()]
+            ['form' => $form->createView(), 'form_action' => $request->getUri()->getPath()]
         );
+    }
+
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        if (!($this->dataProvider instanceof CatalogFormInterface)) {
+            throw new InvalidArgumentException('DataProvider must implements CatalogFormInterface');
+        }
+
+        if (!$id = (int)$args['id']) {
+            throw new InvalidArgumentException('Id must specified for delete');
+        }
+
+        $success = $this->dataProvider->delete($id);
+
+        if ($this->requestService->isAjax($request)) {
+            return $this->responseFormatter->asJson($response, ['success' => $success]);
+        }
+
+        return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::REDIRECT);
     }
 
 

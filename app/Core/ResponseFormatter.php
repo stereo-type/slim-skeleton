@@ -75,9 +75,10 @@ readonly class ResponseFormatter
         $modalTitle = $params['modalTitle'] ?? '';
         $modalClass = $params['modalClasses'] ?? '';
         $modalActionType = $params['modalActionType'] ?? 'none';
+        $modalTemplate = $params['modalTemplate'] ?? 'modal.twig';
 
         return $this->twig->fetch(
-            'modal.twig',
+            $modalTemplate,
             [
                 'modalId'         => $body['modalId'] ?? random_int(0, 1000),
                 'modalContent'    => $body['modalContent'] ?? '',

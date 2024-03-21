@@ -15,6 +15,17 @@ enum ModalDataType {
     ajax_form = 'ajax_form',
 }
 
+enum ModalBehaviourShow {
+    replace = 'replace',
+    add = 'add',
+    cache = 'cache',
+}
+
+enum ModalBehaviourHide {
+    hide = 'hide',
+    dispose = 'dispose',
+}
+
 interface BootstrapModal {
     getElement(): string | Element;
 }
@@ -24,13 +35,25 @@ class SlimModal extends Modal implements BootstrapModal {
 
     private readonly _modalElement: string | Element;
 
-    constructor(element: string | Element, options?: Partial<Modal.Options>) {
+    constructor(element: string | Element, private params: ModalTemplateParams, options?: Partial<Modal.Options>,) {
         super(element, options);
         this._modalElement = element;
     }
 
     getElement(): Element {
-        return typeof this._modalElement !== "string"?   this._modalElement : document.querySelector(this._modalElement);
+        return typeof this._modalElement !== "string" ? this._modalElement : document.querySelector(this._modalElement);
+    }
+
+    hide() {
+        switch (this.params.modalBehaviourHide) {
+            case ModalBehaviourHide.hide:
+                super.hide();
+                break;
+            case ModalBehaviourHide.dispose:
+                super.hide();
+                this.getElement().remove();
+                break;
+        }
     }
 
 }
@@ -41,6 +64,9 @@ class ModalTemplateParams {
         public readonly modalActionType: ModalActionType = ModalActionType.close,
         public readonly modalTitle: string = '',
         public readonly modalClasses: string = '',
+        public readonly modalTemplate: string = 'modal.twig',
+        public readonly modalBehaviourShow: ModalBehaviourShow = ModalBehaviourShow.add,
+        public readonly modalBehaviourHide: ModalBehaviourHide = ModalBehaviourHide.hide,
     ) {
     }
 
@@ -49,6 +75,9 @@ class ModalTemplateParams {
             map['modalActionType'] ?? ModalActionType.close,
             map['modalTitle'] ?? '',
             map['modalClasses'] ?? '',
+            map['modalTemplate'] ?? 'modal.twig',
+            map['modalBehaviourShow'] ?? ModalBehaviourShow.add,
+            map['modalBehaviourShow'] ?? ModalBehaviourHide.hide,
         );
     }
 
@@ -74,6 +103,15 @@ abstract class ModalTemplate {
     get_route(): string {
         return '/modal';
     }
+
+    get_params(): ModalTemplateParams {
+        return this.params;
+    }
+
+    get_id(): string {
+        return this.modalId;
+    }
+
 
     static build(data: ModalTemplate | Record<string, any> | string): ModalTemplate {
         if (data instanceof ModalTemplate) {
@@ -147,51 +185,85 @@ class ModalTemplateAjax extends ModalTemplate {
 
 }
 
+function _create_modal_wrapper(content: string): HTMLElement {
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = content;
+    const modalWrapper = tempElement.firstChild as HTMLElement;
+    document.body.appendChild(modalWrapper);
+    return modalWrapper
+}
+
+function _show_modal(wrapper: HTMLElement, params: ModalTemplateParams): SlimModal {
+    const modal = new SlimModal(wrapper, params);
+
+    wrapper.addEventListener('click', function (evt) {
+        if (evt.target
+            && evt.target instanceof Element
+            && evt.target.matches('[data-dismiss="modal"]')) {
+            modal.hide();
+        }
+    });
+
+    modal.show();
+
+    return modal;
+}
+
 const modal = async function (content: ModalTemplate | Record<string, any> | string): Promise<SlimModal | null> {
     const template = ModalTemplate.build(content);
     const route = template.get_route();
     // showLoader();
+    const modal_params = template.get_params();
+    const id = template.get_id();
+    let modalWrapper = document.getElementById(id) as HTMLElement | null;
 
-    const response = await post(
-        route,
-        template.toMap(),
-        null,
-        false
-    );
-    // dismissLoader();
-
-    if (!response.ok) {
-        alert('Ошибка отображения модального окна');
-        return null;
+    /**Вариант с показом модалки ранее загруженной на клиент*/
+    if (modal_params.modalBehaviourShow == ModalBehaviourShow.cache && modalWrapper != null) {
+        return _show_modal(modalWrapper, modal_params);
     } else {
-        return response.json().then(data => {
-            if (data['modal']) {
-                const tempElement = document.createElement('div');
-                tempElement.innerHTML = data['modal'].toString();
-                const modalWrapper = tempElement.firstChild as HTMLElement;
-                document.body.appendChild(modalWrapper);
+        const response = await post(
+            route,
+            template.toMap(),
+            null,
+            false
+        );
+        // dismissLoader();
 
-                const modal = new SlimModal(modalWrapper);
-
-
-                modalWrapper.addEventListener('click', function (evt) {
-                    if (evt.target && evt.target instanceof Element && evt.target.matches('[data-dismiss="modal"]')) {
-                        modal.hide(); // Здесь предполагается, что у вас есть объект модального окна с методом hide()
-                    }
-                });
-                modal.show();
-                return modal;
-            }
+        if (!response.ok) {
+            alert('Ошибка отображения модального окна');
             return null;
-        });
+        } else {
+            return response.json().then(data => {
+                if (data['modal']) {
+
+                    if (modal_params.modalBehaviourShow == ModalBehaviourShow.replace) {
+                        modalWrapper = modalWrapper ?? _create_modal_wrapper(data['modal'].toString());
+                    } else if (modal_params.modalBehaviourShow == ModalBehaviourShow.add) {
+                        modalWrapper = _create_modal_wrapper(data['modal'].toString());
+                    }
+
+                    modalWrapper =  modalWrapper ?? _create_modal_wrapper(data['modal'].toString());
+                    if (modalWrapper) {
+                        return _show_modal(modalWrapper, modal_params);
+                    } else {
+                        throw Error('no modal wrapper');
+                    }
+                }
+                return null;
+            });
+        }
     }
+
 }
 
 export {
     modal,
     SlimModal,
+    ModalTemplate,
     ModalTemplateHtml,
     ModalTemplateAjax,
     ModalTemplateParams,
-    ModalActionType
+    ModalActionType,
+    ModalBehaviourShow,
+    ModalBehaviourHide,
 };

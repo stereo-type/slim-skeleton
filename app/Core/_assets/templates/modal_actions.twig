@@ -1,0 +1,13 @@
+{% set no_actions = modalActionType == 'none' %}
+            {% if not no_actions %}
+                <div class="modal-footer">
+                    {% if modalActionType == 'save' or modalActionType == 'save_and_close' %}
+                        <button type="button" class="btn btn-primary mx-3"
+                                data-dismiss="modal">{{ translate('save') }}</button>
+                    {% endif %}
+                    {% if modalActionType == 'close' or modalActionType == 'save_and_close' %}
+                        <button type="button" class="btn btn-secondary"
+                                data-dismiss="modal">{{ translate('close') }}</button>
+                    {% endif %}
+                </div>
+            {% endif %}

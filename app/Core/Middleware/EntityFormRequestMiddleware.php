@@ -52,6 +52,7 @@ readonly class EntityFormRequestMiddleware implements MiddlewareInterface
                     return $this->responseFormatter->asJsonModal(
                         $this->responseFactory->createResponse(),
                         [
+                            'modalId' => $requestBody['modalId'],
                             'modalContent' => $form,
                             'params'       => $requestBody['params']
                         ]

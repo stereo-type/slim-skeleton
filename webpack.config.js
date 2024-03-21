@@ -36,8 +36,14 @@ Encore
 
     // public path used by the web server to access the output path
     .setPublicPath("/build")
-    .enableTypeScriptLoader()
-    // .enableForkedTypeScriptTypesChecking()
+    // .enableTypeScriptLoader()
+    .enableTypeScriptLoader(function (tsConfig) {
+        // You can use this callback function to adjust ts-loader settings
+        // https://github.com/TypeStrong/ts-loader/blob/master/README.md#loader-options
+        // For example:
+        tsConfig.silent = false
+        tsConfig.transpileOnly = true
+    })
 
     /*
      * ENTRY CONFIG
@@ -66,7 +72,7 @@ Encore
     .enableSourceMaps(!Encore.isProduction())
 
     // enables hashed filenames (e.g. app.abc123.css)
-    .enableVersioning()
+    .enableVersioning(Encore.isProduction())
 
     .configureBabel((config) => {
         config.plugins.push("@babel/plugin-proposal-class-properties")
