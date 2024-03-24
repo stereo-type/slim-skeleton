@@ -4,35 +4,37 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Controllers;
 
+use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
+use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
+use App\Core\Components\Catalog\Model\Filter\Type\Page;
+use App\Core\Components\Catalog\Providers\CatalogDataProviderInterface;
+use App\Core\Components\Catalog\Providers\CatalogFilterInterface;
+use App\Core\Contracts\SessionInterface;
+use App\Core\Enum\ServerStatus;
+use App\Core\Middleware\AuthMiddleware;
+use App\Core\Middleware\EntityFormRequestMiddleware;
+use App\Core\Middleware\RoleMiddleware;
+use App\Core\ResponseFormatter;
+use App\Core\Widgets\PagingBar;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityNotFoundException;
 use Exception;
 use InvalidArgumentException;
-
-use Psr\Http\Message\UriInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-
+use Psr\Http\Message\UriInterface;
 use Slim\App;
-use Slim\Views\Twig;
+use Slim\Interfaces\RouteGroupInterface;
 use Slim\Routing\RouteCollectorProxy;
+use Slim\Views\Twig;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Doctrine\ORM\EntityManagerInterface;
 
-use App\Core\ResponseFormatter;
-use App\Core\Constants\ServerStatus;
-use App\Core\Contracts\SessionInterface;
-use App\Core\Middleware\AuthMiddleware;
-use App\Core\Middleware\EntityFormRequestMiddleware;
-use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
-use App\Core\Components\Catalog\Providers\CatalogFilterInterface;
-use App\Core\Components\Catalog\Providers\CatalogDataProviderInterface;
-use App\Core\Components\Catalog\Model\Pagination\PagingBar;
-use App\Core\Components\Catalog\Model\Filter\Type\Page;
-use App\Core\Components\Catalog\Model\Filter\Collections\Filters;
+use function Sodium\add;
 
 
 /**Класс для построения контроллеров таблиц без привязки к сущностям (Entity). Релизация:
@@ -95,7 +97,15 @@ abstract class CatalogController
         ];
     }
 
-    public static function routing(App $app, ?string $route = null): void
+    /**
+     * @param App $app
+     * @param string|null $route
+     * @return RouteGroupInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws EntityNotFoundException
+     */
+    public static function routing(App $app, ?string $route = null): RouteGroupInterface
     {
         $class = static::class;
         $route = $route ?? $class::get_index_route();
@@ -104,11 +114,11 @@ abstract class CatalogController
         }
         $reportName = substr($route, 1);
         $method = 'additional_routes';
-        $app->group($route, function (RouteCollectorProxy $collectorProxy) use ($class, $reportName, $method) {
+        return $app->group($route, function (RouteCollectorProxy $collectorProxy) use ($class, $reportName, $method) {
             $collectorProxy->get('', [$class, 'index'])->setName($reportName);
             $collectorProxy->post('/filter', [$class, 'filter']);
             $class::$method($collectorProxy);
-        })->add(AuthMiddleware::class)->add(EntityFormRequestMiddleware::class);
+        })->add(EntityFormRequestMiddleware::class)->add(RoleMiddleware::admin())->add(AuthMiddleware::class);
     }
 
     protected static function additional_routes(RouteCollectorProxy $collectorProxy): void
@@ -153,7 +163,9 @@ abstract class CatalogController
         /**ClearCache*/
         if (!empty($data['clearCache']) && (bool)$data['clearCache']) {
             $this->clear_filters_from_cache();
-            return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::REDIRECT);
+            return $response->withHeader('Location', $this->get_index_route())->withStatus(
+                ServerStatus::REDIRECT->value
+            );
         }
 
         /**Cache**/

@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Core\Middleware;
 
-use App\Core\Constants\ServerStatus;
+use App\Core\Enum\ServerStatus;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -25,6 +25,6 @@ readonly class VerifyEmailMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        return $this->responseFactory->createResponse(ServerStatus::REDIRECT)->withHeader('Location', '/verify');
+        return $this->responseFactory->createResponse(ServerStatus::REDIRECT->value)->withHeader('Location', '/verify');
     }
 }

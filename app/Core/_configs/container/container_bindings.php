@@ -3,22 +3,46 @@
 declare(strict_types=1);
 
 
+use App\Core\_configs\builder\twig\Builder;
+use App\Core\Auth;
+use App\Core\Config;
+use App\Core\Contracts\EntityManagerServiceInterface;
+use App\Core\Contracts\RequestValidatorFactoryInterface;
+use App\Core\Contracts\SessionInterface;
+use App\Core\Contracts\User\AuthInterface;
+use App\Core\Contracts\User\UserProviderServiceInterface;
+use App\Core\Csrf;
+use App\Core\DataObjects\SessionConfig;
+use App\Core\Enum\SameSite;
+use App\Core\Enum\StorageDriver;
+use App\Core\Filters\UserFilter;
+use App\Core\Repository\User\UserProviderRepository;
+use App\Core\RequestValidators\RequestValidatorFactory;
+use App\Core\RouteEntityBindingStrategy;
+use App\Core\Services\EntityManagerService;
+use App\Core\Services\Purifier;
 use App\Core\Services\RequestConvertor;
+use App\Core\Services\Translator;
+use App\Core\Session;
 use Clockwork\Clockwork;
 use Clockwork\DataSource\DoctrineDataSource;
 use Clockwork\Storage\FileStorage;
-
+use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\ORMSetup;
+use DoctrineExtensions\Query\Mysql\DateFormat;
+use DoctrineExtensions\Query\Mysql\Month;
+use DoctrineExtensions\Query\Mysql\Year;
+use League\Flysystem\Filesystem;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\SimpleCache\CacheInterface;
-
 use Slim\App;
 use Slim\Csrf\Guard;
 use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Views\Twig;
-use League\Flysystem\Filesystem;
-
 use Symfony\Bridge\Twig\Mime\BodyRenderer;
 use Symfony\Component\Asset\Package;
 use Symfony\Component\Asset\Packages;
@@ -40,35 +64,6 @@ use Symfony\Component\RateLimiter\Storage\CacheStorage;
 use Symfony\Component\Validator\Validation;
 use Symfony\WebpackEncoreBundle\Asset\EntrypointLookup;
 use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
-
-use Doctrine\DBAL\DriverManager;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\ORMSetup;
-use DoctrineExtensions\Query\Mysql\DateFormat;
-use DoctrineExtensions\Query\Mysql\Month;
-use DoctrineExtensions\Query\Mysql\Year;
-
-use App\Core\Auth;
-use App\Core\Config;
-use App\Core\Contracts\EntityManagerServiceInterface;
-use App\Core\Contracts\RequestValidatorFactoryInterface;
-use App\Core\Contracts\SessionInterface;
-use App\Core\Contracts\User\AuthInterface;
-use App\Core\Contracts\User\UserProviderServiceInterface;
-use App\Core\Csrf;
-use App\Core\DataObjects\SessionConfig;
-use App\Core\Enum\SameSite;
-use App\Core\Enum\StorageDriver;
-use App\Core\Filters\UserFilter;
-use App\Core\RequestValidators\RequestValidatorFactory;
-use App\Core\RouteEntityBindingStrategy;
-use App\Core\Services\EntityManagerService;
-use App\Core\Services\UserProviderService;
-use App\Core\Session;
-use App\Core\_configs\builder\twig\Builder;
-use App\Core\Services\Purifier;
-use App\Core\Services\Translator;
 
 use function DI\create;
 
@@ -159,7 +154,7 @@ $coreBindings = [
     AuthInterface::class                    =>
         static fn(ContainerInterface $container) => $container->get(Auth::class),
     UserProviderServiceInterface::class     =>
-        static fn(ContainerInterface $container) => $container->get(UserProviderService::class),
+        static fn(ContainerInterface $container) => $container->get(UserProviderRepository::class),
     SessionInterface::class                 =>
         static fn(Config $config) => new Session(
             new SessionConfig(
@@ -231,7 +226,7 @@ $coreBindings = [
         $registry = new FormRegistry($extensions, $resolvedTypeFactory);
         return new FormFactory($registry);
     },
-    Translator::class                       => static fn(Config $config) => new Translator($config->get('lang')),
+    Translator::class                       => static fn(Config $config) => new Translator($config->get('_lang')),
     Purifier::class                         => static fn() => Purifier::build(),
     RequestConvertor::class                 => create(RequestConvertor::class),
 ];

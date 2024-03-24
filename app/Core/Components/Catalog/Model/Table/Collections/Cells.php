@@ -29,6 +29,10 @@ class Cells extends ArrayCollection
         parent::__construct($elements);
     }
 
+    /**
+     * @param Cell $element
+     * @return void
+     */
     public function add($element): void
     {
         if (!($element instanceof Cell)) {

@@ -4,8 +4,8 @@ declare(strict_types = 1);
 
 namespace App\Core\Middleware;
 
-use App\Core\Constants\ServerStatus;
 use App\Core\Contracts\SessionInterface;
+use App\Core\Enum\ServerStatus;
 use App\Core\Exception\ValidationException;
 use App\Core\ResponseFormatter;
 use App\Core\Services\RequestService;
@@ -33,7 +33,7 @@ readonly class ValidationExceptionMiddleware implements MiddlewareInterface
             $response = $this->responseFactory->createResponse();
 
             if ($this->requestService->isAjax($request)) {
-                return $this->responseFormatter->asJson($response->withStatus(ServerStatus::VALIDATION_ERROR), $e->errors);
+                return $this->responseFormatter->asJson($response->withStatus(ServerStatus::VALIDATION_ERROR->value), $e->errors);
             }
 
             $referer  = $this->requestService->getReferer($request);
@@ -44,7 +44,7 @@ readonly class ValidationExceptionMiddleware implements MiddlewareInterface
             $this->session->flash('errors', $e->errors);
             $this->session->flash('old', array_diff_key($oldData, array_flip($sensitiveFields)));
 
-            return $response->withHeader('Location', $referer)->withStatus(ServerStatus::REDIRECT);
+            return $response->withHeader('Location', $referer)->withStatus(ServerStatus::REDIRECT->value);
         }
     }
 }

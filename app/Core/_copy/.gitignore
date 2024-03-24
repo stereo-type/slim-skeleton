@@ -1,0 +1,7 @@
+.idea
+.env
+dockerstorage
+storage
+vendor
+node_modules
+public/build

@@ -1,0 +1,104 @@
+{% extends 'layout.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block title %}{{ translate('administrating') }}{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3">
+                <h4>{{ translate('administrating') }}</h4>
+            </div>
+            <div class="col-sm-9">
+                <ul class="list-unstyled">
+                </ul>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-sm-3">
+                <h4><a href="#">Пользователи</a></h4>
+            </div>
+            <div class="col-sm-9">
+                <ul class="list-unstyled">
+                    <li><a href="https://ms.sdo.support/local/webinar/pages/webinar_graph.php">График вебинаров</a></li>
+                    <li><a href="https://ms.sdo.support/local/webinar/pages/webinar_webinar.php">Вебинары</a></li>
+                    <li><a href="https://ms.sdo.support/local/webinar/pages/webinar_series.php">Серии вебинаров</a></li>
+                    <li><a href="https://ms.sdo.support/local/webinar/pages/webinar_place.php">Места проведения вебинаров</a></li>
+                    <li><a href="https://ms.sdo.support/local/webinar/pages/webinar_type.php">Типы вебинаров</a></li>
+                    <li><a href="https://ms.sdo.support/local/webinar/pages/webinar_group.php">Группа вебинаров</a></li>
+                    <li><a href="https://ms.sdo.support/local/webinar/pages/webinar_author.php">Aвторы вебинаров</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-sm-3">
+                <h4><a href="#">Мобильное приложение</a></h4>
+
+            </div>
+            <div class="col-sm-9">
+                <ul class="list-unstyled">
+                    <li><a href="https://ms.sdo.support/admin/category.php?category=program_gallery">Продающее приложение</a></li>
+                    <li>
+                        <ul class="list-unstyled ml-2">
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/category.php">Категории галлереи программ</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/gallery.php">Галлерея программ</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/faq.php">FAQ для галлереи программ</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/oferta.php">Оферта</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/sticker.php">Стикеры</a></li>
+                            <li><a href="https://ms.sdo.support/admin/settings.php?section=program_gallery_recommendation_config">Настройки рекомендаций</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/recommended.php">Рекомендации пользователей</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/favorite.php">Просмотр избранных</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/manage_category.php">Управление настройками видимости категорий</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/program_subs.php">Отчет количеству пользователей, зачисленных на программы</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/program_relation.php">Отчет взаимосвязям программ у пользователей</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/gallery/program_watches.php">Отчет по просмотру пользователями программ</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="https://ms.sdo.support/admin/category.php?category=mobile_review">Отзывы</a></li>
+                    <li>
+                        <ul class="list-unstyled ml-2">
+                            <li><a href="https://ms.sdo.support/local/mobile_app/review/settings.php">Настройки отзывов в мобильном приложении</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="https://ms.sdo.support/admin/category.php?category=mobile_quiz">Опросы</a></li>
+                    <li>
+                        <ul class="list-unstyled ml-2">
+                            <li><a href="https://ms.sdo.support/local/mobile_app/quiz/quiz.php">Опросы</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/quiz/question.php">Вопросы</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/quiz/variant.php">Варианты</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/quiz/answer.php">Ответы пользователей</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="https://ms.sdo.support/admin/category.php?category=mobile_push">Пуш уведомления</a></li>
+                    <li>
+                        <ul class="list-unstyled ml-2">
+                            <li><a href="https://ms.sdo.support/local/mobile_app/push/manage.php">Управление уведомлениями</a></li>
+                            <li><a href="https://ms.sdo.support/local/mobile_app/push/test.php">Отправка тестового уведомления</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="https://ms.sdo.support/admin/category.php?category=mobile_popup">Управление pop-up</a></li>
+                    <li>
+                        <ul class="list-unstyled ml-2">
+                            <li><a href="https://ms.sdo.support/local/mobile_app/popup/manage.php">Создать pop-up</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="https://ms.sdo.support/admin/category.php?category=mobile_banner">Управление банерами</a></li>
+                    <li>
+                        <ul class="list-unstyled ml-2">
+                            <li><a href="https://ms.sdo.support/local/mobile_app/banner/manage.php">Создать баннер</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}

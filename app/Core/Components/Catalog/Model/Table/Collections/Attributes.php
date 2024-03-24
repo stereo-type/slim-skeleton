@@ -39,6 +39,10 @@ class Attributes extends ArrayCollection
         parent::__construct($elements);
     }
 
+    /**
+     * @param Attribute $element
+     * @return void
+     */
     public function add($element): void
     {
         if (!($element instanceof Attribute)) {

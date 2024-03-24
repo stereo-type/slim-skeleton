@@ -4,11 +4,11 @@ declare(strict_types = 1);
 
 namespace App\Core\Controllers;
 
-use App\Core\Constants\ServerStatus;
 use App\Core\Contracts\RequestValidatorFactoryInterface;
 use App\Core\Contracts\User\AuthInterface;
 use App\Core\DataObjects\RegisterUserData;
 use App\Core\Enum\AuthAttemptStatus;
+use App\Core\Enum\ServerStatus;
 use App\Core\Exception\ValidationException;
 use App\Core\RequestValidators\RegisterUserRequestValidator;
 use App\Core\RequestValidators\TwoFactorLoginRequestValidator;
@@ -65,7 +65,7 @@ readonly class AuthController
             new RegisterUserData($data['name'], $data['email'], $data['password'])
         );
 
-        return $response->withHeader('Location', '/')->withStatus(ServerStatus::REDIRECT);
+        return $response->withHeader('Location', '/')->withStatus(ServerStatus::REDIRECT->value);
     }
 
     public function logIn(Request $request, Response $response): Response

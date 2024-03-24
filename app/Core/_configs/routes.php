@@ -2,9 +2,10 @@
 
 declare(strict_types = 1);
 
-use App\Core\Controllers\ModalController;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
+
+use App\Core\Controllers\ModalController;
 use App\Core\Controllers\AuthController;
 use App\Core\Controllers\HomeController;
 use App\Core\Controllers\PasswordResetController;

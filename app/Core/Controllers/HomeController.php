@@ -33,11 +33,6 @@ readonly class HomeController
         return $this->twig->render(
             $response,
             'dashboard.twig',
-            [
-                'totals'                => 1,
-                'transactions'          => 1,
-                'topSpendingCategories' => 1,
-            ]
         );
     }
 

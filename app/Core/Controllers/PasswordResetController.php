@@ -4,14 +4,16 @@ declare(strict_types = 1);
 
 namespace App\Core\Controllers;
 
-use App\Core\Constants\ServerStatus;
 use App\Core\Contracts\RequestValidatorFactoryInterface;
 use App\Core\Contracts\User\UserProviderServiceInterface;
+use App\Core\Enum\ServerStatus;
 use App\Core\Exception\ValidationException;
 use App\Core\Mail\ForgotPasswordEmail;
+use App\Core\Repository\User\PasswordResetRepository;
 use App\Core\RequestValidators\ForgotPasswordRequestValidator;
 use App\Core\RequestValidators\ResetPasswordRequestValidator;
-use App\Core\Services\PasswordResetService;
+use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -19,8 +21,6 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Doctrine\ORM\NonUniqueResultException;
-use Exception;
 
 readonly class PasswordResetController
 {
@@ -28,7 +28,7 @@ readonly class PasswordResetController
         private Twig $twig,
         private RequestValidatorFactoryInterface $requestValidatorFactory,
         private UserProviderServiceInterface $userProviderService,
-        private PasswordResetService $passwordResetService,
+        private PasswordResetRepository $passwordResetService,
         private ForgotPasswordEmail $forgotPasswordEmail
     ) {
     }
@@ -77,7 +77,7 @@ readonly class PasswordResetController
         $passwordReset = $this->passwordResetService->findByToken($args['token']);
 
         if (! $passwordReset) {
-            return $response->withHeader('Location', '/')->withStatus(ServerStatus::REDIRECT);
+            return $response->withHeader('Location', '/')->withStatus(ServerStatus::REDIRECT->value);
         }
 
         return $this->twig->render($response, 'auth/reset_password.twig', ['token' => $args['token']]);

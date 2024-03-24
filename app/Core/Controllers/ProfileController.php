@@ -6,9 +6,9 @@ namespace App\Core\Controllers;
 
 use App\Core\Contracts\RequestValidatorFactoryInterface;
 use App\Core\DataObjects\UserProfileData;
+use App\Core\Repository\User\PasswordResetRepository;
 use App\Core\RequestValidators\UpdatePasswordRequestValidator;
 use App\Core\RequestValidators\UpdateProfileRequestValidator;
-use App\Core\Services\PasswordResetService;
 use App\Core\Services\UserProfileService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -23,7 +23,7 @@ readonly class ProfileController
         private Twig $twig,
         private RequestValidatorFactoryInterface $requestValidatorFactory,
         private UserProfileService $userProfileService,
-        private PasswordResetService $passwordResetService
+        private PasswordResetRepository $passwordResetService
     ) {
     }
 

@@ -18,6 +18,20 @@ use Slim\Middleware\MethodOverrideMiddleware;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 
+/**
+ * declare(strict_types=1);
+ *
+ * use Slim\App;
+ * return static function (App $app) {
+ * $core_middleware = require CORE_CONFIG_PATH.'/middleware.php';
+ * $core_middleware($app);
+ *
+ * Добавить свои зависимости
+ *
+ * }
+ **/
+
+
 return static function (App $app) {
     $container = $app->getContainer();
     if ($container === null) {

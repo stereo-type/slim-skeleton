@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Middleware;
 
 use App\Core\Config;
-use App\Core\Constants\ServerStatus;
+use App\Core\Enum\ServerStatus;
 use App\Core\Services\RequestService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -35,7 +35,7 @@ readonly class RateLimitMiddleware implements MiddlewareInterface
             $limiter = $this->rateLimiterFactory->create($route->getName().'_'.$clientIp);
 
             if ($limiter->consume()->isAccepted() === false) {
-                return $this->responseFactory->createResponse(ServerStatus::TO_MANY_REQUESTS, 'Too many requests');
+                return $this->responseFactory->createResponse(ServerStatus::TO_MANY_REQUESTS->value, 'Too many requests');
             }
 
             return $handler->handle($request);

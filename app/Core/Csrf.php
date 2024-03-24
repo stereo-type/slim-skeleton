@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Core;
 
+use App\Core\Enum\ServerStatus;
 use Closure;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,6 +21,6 @@ readonly class Csrf
         return fn(
             ServerRequestInterface $request,
             RequestHandlerInterface $handler
-        ) => $this->responseFactory->createResponse()->withStatus(403);
+        ) => $this->responseFactory->createResponse()->withStatus(ServerStatus::UNAUTHORIZED->value);
     }
 }

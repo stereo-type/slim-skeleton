@@ -219,7 +219,8 @@ abstract class EntityDataProvider extends AbstractDataProvider implements Catalo
             } elseif ($v instanceof DateTime) {
                 $result[] = date(static::DATE_FORMAT, $v->getTimestamp());
             } else {
-                throw new InvalidArgumentException('Unsupported type ' . gettype($v));
+                $result[] = gettype($v);
+//                throw new InvalidArgumentException('Unsupported type ' . gettype($v));
             }
         }
         $result[] = $this->manage_buttons($twig, (int)$item['id']);

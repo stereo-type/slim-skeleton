@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Middleware;
 
-use App\Core\Constants\ServerStatus;
 use App\Core\Contracts\EntityManagerServiceInterface;
 use App\Core\Contracts\User\AuthInterface;
+use App\Core\Enum\ServerStatus;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -44,6 +44,6 @@ readonly class AuthMiddleware implements MiddlewareInterface
             throw new RuntimeException('Route not found');
         }
 
-        return $this->responseFactory->createResponse(ServerStatus::REDIRECT)->withHeader('Location', '/login');
+        return $this->responseFactory->createResponse(ServerStatus::REDIRECT->value)->withHeader('Location', '/login');
     }
 }

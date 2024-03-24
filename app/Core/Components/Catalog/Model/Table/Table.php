@@ -1,6 +1,6 @@
 <?php
 /**
- * @package  Table.php
+ * @package  Category.php
  * @copyright 15.02.2024 Zhalyaletdinov Vyacheslav evil_tut@mail.ru
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

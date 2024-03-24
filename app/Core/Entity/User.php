@@ -4,53 +4,55 @@ declare(strict_types=1);
 
 namespace App\Core\Entity;
 
-use DateTime;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\Table;
+use App\Core\Contracts\Role\RoleAssignmentInterface;
 use App\Core\Contracts\User\OwnableInterface;
 use App\Core\Contracts\User\UserInterface;
 use App\Core\Entity\Traits\HasTimestamps;
+use DateTime;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[Entity, Table('users')]
-#[HasLifecycleCallbacks]
+
+#[ORM\Entity, ORM\Table('users')]
+#[ORM\HasLifecycleCallbacks]
 class User implements UserInterface
 {
     use HasTimestamps;
 
-    #[Id, Column(options: ['unsigned' => true]), GeneratedValue]
+    #[ORM\Id, ORM\Column(options: ['unsigned' => true]), ORM\GeneratedValue]
     private int $id;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 5)]
-    #[Column]
+    #[ORM\Column]
     private string $name;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 5)]
     #[Assert\Email]
-    #[Column]
+    #[ORM\Column]
     private string $email;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 5)]
-    #[Column]
+    #[ORM\Column]
     private string $password;
 
-    #[Column(name: 'two_factor', options: ['default' => false])]
+    #[ORM\Column(name: 'two_factor', options: ['default' => false])]
     private bool $twoFactor;
 
-    #[Column(name: 'verified_at', nullable: true)]
+    #[ORM\Column(name: 'verified_at', nullable: true)]
     private ?DateTime $verifiedAt;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: 'RoleAssignment', cascade: ['persist', 'remove'])]
+    private Collection $assignments;
 
     public function __construct()
     {
         $this->twoFactor = false;
     }
+
 
     public function getId(): int
     {
@@ -121,4 +123,15 @@ class User implements UserInterface
 
         return $this;
     }
+
+    public function getRolesAssignments(): Collection
+    {
+        return $this->assignments;
+    }
+
+    public function getRoles(): array
+    {
+        return array_map(static fn(RoleAssignmentInterface $e) => $e->getRole(), $this->assignments->toArray());
+    }
+
 }

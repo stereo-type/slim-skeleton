@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Services;
 
-use App\Core\Contracts\SessionInterface;
-use App\Core\DataObjects\DataTableQueryParams;
 use Psr\Http\Message\ServerRequestInterface;
+
+use App\Core\Contracts\SessionInterface;
 
 readonly class RequestService
 {
@@ -36,22 +36,6 @@ readonly class RequestService
         return $request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest';
     }
 
-    public function getDataTableQueryParameters(ServerRequestInterface $request): DataTableQueryParams
-    {
-        $params = $request->getQueryParams();
-
-        $orderBy = $params['columns'][$params['order'][0]['column']]['data'];
-        $orderDir = $params['order'][0]['dir'];
-
-        return new DataTableQueryParams(
-            (int)$params['start'],
-            (int)$params['length'],
-            $orderBy,
-            $orderDir,
-            $params['search']['value'],
-            (int)$params['draw']
-        );
-    }
 
     public function getClientIp(ServerRequestInterface $request, array $trustedProxies): ?string
     {

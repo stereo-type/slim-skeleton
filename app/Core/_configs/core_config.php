@@ -22,7 +22,7 @@ return [
     'app_version'           => $_ENV['APP_VERSION'] ?? '1.0',
     'app_url'               => $_ENV['APP_URL'],
     'app_environment'       => $appEnv,
-    'lang'                  => 'ru',
+    '_lang'                  => 'ru',
     'display_error_details' => $boolean($_ENV['APP_DEBUG'] ?? 0),
     'log_errors'            => true,
     'log_error_details'     => true,

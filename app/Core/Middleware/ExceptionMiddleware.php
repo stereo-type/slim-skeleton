@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Core\Middleware;
 
 use App\Core\Config;
-use App\Core\Constants\ServerStatus;
 use App\Core\Enum\AppEnvironment;
+use App\Core\Enum\ServerStatus;
 use App\Core\Exception\ValidationException;
 use App\Core\ResponseFormatter;
 use App\Core\Services\RequestService;
@@ -48,7 +48,7 @@ readonly class ExceptionMiddleware implements MiddlewareInterface
                     $data['file'] = $e->getFile();
                     $data['trace'] = $e->getTrace();
                 }
-                return $this->responseFormatter->asJson($response->withStatus(ServerStatus::BAD_REQUEST), $data);
+                return $this->responseFormatter->asJson($response->withStatus(ServerStatus::BAD_REQUEST->value), $data);
             }
 
             if ($debug) {
@@ -56,7 +56,7 @@ readonly class ExceptionMiddleware implements MiddlewareInterface
                 return $handler->handle($request);
             }
 
-            return $response->withStatus(ServerStatus::SERVER_ERROR);
+            return $response->withStatus(ServerStatus::BAD_REQUEST->value);
         }
     }
 }

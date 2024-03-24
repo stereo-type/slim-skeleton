@@ -4,29 +4,25 @@ declare(strict_types=1);
 
 namespace App\Core\Components\Catalog\Controllers;
 
-use InvalidArgumentException;
-
-use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\ServerRequestInterface as SlimRequest;
-
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
-
-use Slim\Routing\RouteCollectorProxy;
-use Symfony\Component\Form\FormFactoryInterface;
-use Doctrine\ORM\EntityManagerInterface;
-
-use App\Core\Services\RequestService;
-use App\Core\Constants\ServerStatus;
-use App\Core\Services\RequestConvertor;
-use App\Core\Exception\ValidationException;
 use App\Core\Components\Catalog\Model\Filter\TableQueryParams;
 use App\Core\Components\Catalog\Providers\CatalogDataProviderInterface;
 use App\Core\Components\Catalog\Providers\CatalogFilterInterface;
 use App\Core\Components\Catalog\Providers\CatalogFormInterface;
+use App\Core\Enum\ServerStatus;
+use App\Core\Exception\ValidationException;
+use App\Core\Services\RequestConvertor;
+use App\Core\Services\RequestService;
+use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ServerRequestInterface as SlimRequest;
+use Slim\Routing\RouteCollectorProxy;
+use Symfony\Component\Form\FormFactoryInterface;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 
 abstract class EntityCatalogController extends CatalogController
@@ -115,10 +111,15 @@ abstract class EntityCatalogController extends CatalogController
                 $success = $this->dataProvider->save_form_data($form->getData());
 
                 if ($this->requestService->isAjax($request)) {
-                    return $this->responseFormatter->asJson($response, ['success' => $success]);
+                    return $this->responseFormatter->asJson(
+                        $response->withStatus(ServerStatus::CREATED->value),
+                        ['success' => $success]
+                    );
                 }
 
-                return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::REDIRECT);
+                return $response->withHeader('Location', $this->get_index_route())->withStatus(
+                    ServerStatus::CREATED->value
+                );
             } else {
                 $errors = [];
                 foreach ($form->getErrors(true) as $e) {
@@ -150,10 +151,13 @@ abstract class EntityCatalogController extends CatalogController
         $success = $this->dataProvider->delete($id);
 
         if ($this->requestService->isAjax($request)) {
-            return $this->responseFormatter->asJson($response, ['success' => $success]);
+            return $this->responseFormatter->asJson(
+                $response->withStatus(ServerStatus::ACCEPTED->value),
+                ['success' => $success]
+            );
         }
 
-        return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::REDIRECT);
+        return $response->withHeader('Location', $this->get_index_route())->withStatus(ServerStatus::ACCEPTED->value);
     }
 
 

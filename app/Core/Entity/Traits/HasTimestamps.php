@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Entity\Traits;
 
 use DateTime;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\PrePersist;
